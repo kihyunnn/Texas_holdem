@@ -5,106 +5,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>텍사스 홀덤 족보</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
-            padding: 20px;
-            background-color: var(--bg-dark);
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
 
-        .ranking-card {
-            margin: 0;
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
         }
     </style>
 </head>
 
 <body>
-    <div class="card ranking-card">
-        <h2>텍사스 홀덤 핸드 랭킹</h2>
-        <div class="ranking-list">
-            <div class="ranking-item">
-                <div class="rank-info">
-                    <span class="rank-badge">1</span>
-                    <h3>로열 플러시 (Royal Flush)</h3>
-                    <p>같은 무늬의 A, K, Q, J, 10</p>
-                </div>
-                <div class="cards-preview">♠A ♠K ♠Q ♠J ♠10</div>
-            </div>
-            <div class="ranking-item">
-                <div class="rank-info">
-                    <span class="rank-badge">2</span>
-                    <h3>스트레이트 플러시 (Straight Flush)</h3>
-                    <p>같은 무늬의 연속된 5장</p>
-                </div>
-                <div class="cards-preview">♥9 ♥8 ♥7 ♥6 ♥5</div>
-            </div>
-            <div class="ranking-item">
-                <div class="rank-info">
-                    <span class="rank-badge">3</span>
-                    <h3>포 카드 (Four of a Kind)</h3>
-                    <p>같은 숫자의 카드 4장</p>
-                </div>
-                <div class="cards-preview">♣5 ♦5 ♥5 ♠5</div>
-            </div>
-            <div class="ranking-item">
-                <div class="rank-info">
-                    <span class="rank-badge">4</span>
-                    <h3>풀 하우스 (Full House)</h3>
-                    <p>트리플 1세트 + 페어 1세트</p>
-                </div>
-                <div class="cards-preview">♠K ♣K ♦K ♠9 ♥9</div>
-            </div>
-            <div class="ranking-item">
-                <div class="rank-info">
-                    <span class="rank-badge">5</span>
-                    <h3>플러시 (Flush)</h3>
-                    <p>무늬가 같은 카드 5장</p>
-                </div>
-                <div class="cards-preview">♦A ♦J ♦8 ♦4 ♦2</div>
-            </div>
-            <div class="ranking-item">
-                <div class="rank-info">
-                    <span class="rank-badge">6</span>
-                    <h3>스트레이트 (Straight)</h3>
-                    <p>무늬 상관없이 연속된 5장</p>
-                </div>
-                <div class="cards-preview">♠9 ♣8 ♥7 ♦6 ♠5</div>
-            </div>
-            <div class="ranking-item">
-                <div class="rank-info">
-                    <span class="rank-badge">7</span>
-                    <h3>트리플 (Three of a Kind)</h3>
-                    <p>같은 숫자 3장</p>
-                </div>
-                <div class="cards-preview">♠Q ♣Q ♥Q</div>
-            </div>
-            <div class="ranking-item">
-                <div class="rank-info">
-                    <span class="rank-badge">8</span>
-                    <h3>투 페어 (Two Pair)</h3>
-                    <p>페어(같은 숫자 2장)가 2세트</p>
-                </div>
-                <div class="cards-preview">♠J ♣J ♦8 ♠8</div>
-            </div>
-            <div class="ranking-item">
-                <div class="rank-info">
-                    <span class="rank-badge">9</span>
-                    <h3>원 페어 (One Pair)</h3>
-                    <p>같은 숫자 2장 1세트</p>
-                </div>
-                <div class="cards-preview">♠10 ♣10</div>
-            </div>
-            <div class="ranking-item">
-                <div class="rank-info">
-                    <span class="rank-badge">10</span>
-                    <h3>하이 카드 (High Card)</h3>
-                    <p>족보가 없을 때 가장 높은 숫자</p>
-                </div>
-                <div class="cards-preview">A > K > Q ...</div>
-            </div>
-        </div>
-    </div>
+    <img src="images/ranking.png" alt="텍사스 홀덤 족보"
+        onerror="this.style.display='none'; document.body.innerHTML='<div style=\'color:white; text-align:center; padding:20px;\'><h2>이미지를 찾을 수 없습니다.</h2><p>static/images/ranking.png 파일을 확인해주세요.</p></div>'">
 </body>
 
 </html>
