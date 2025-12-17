@@ -4,14 +4,96 @@ let handChart = null;
 
 // --- 초기화 ---
 document.addEventListener('DOMContentLoaded', () => {
-    loadDashboard();
+    // 탭 상태 복원 또는 기본값
+    const lastTab = localStorage.getItem('lastTab') || 'today';
+    switchTab(lastTab);
 });
+
+function switchTab(tabId) {
+    // 탭 UI 전환
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+    // 버튼은 onclick에서 전달된 tabId에 해당하는 것만 active
+    const activeBtn = document.querySelector(`.tab-btn[onclick="switchTab('${tabId}')"]`);
+    if (activeBtn) activeBtn.classList.add('active');
+
+    document.getElementById(`tab-${tabId}`).classList.add('active');
+    localStorage.setItem('lastTab', tabId);
+
+    // 데이터 로드
+    if (tabId === 'today') {
+        loadDashboard();
+    } else if (tabId === 'players') {
+        loadPlayerAnalysisTab();
+    }
+}
 
 async function loadDashboard() {
     await loadPlayers();
-    await loadSessionStats(); // 오늘 세션 통계 (리더보드)
+    await loadSessionStats(); // 오늘 세션 통계
     await loadRecentGames();  // 오늘 게임 기록
-    await loadCharts();       // 차트 렌더링
+    await loadCharts();       // 차트
+}
+
+async function loadPlayerAnalysisTab() {
+    await loadPlayers();
+    // 플레이어 선택 목록 렌더링 (분석 탭용)
+    const select = document.getElementById('analysisPlayerSelect');
+    // 기존 옵션 유지하고 추가
+    if (select.children.length <= 1) { // 로드 안된 경우만
+        players.forEach(p => {
+            const option = document.createElement('option');
+            option.value = p.id;
+            option.textContent = p.name;
+            select.appendChild(option);
+        });
+    }
+}
+
+async function loadPlayerAnalysis(playerId) {
+    if (!playerId) {
+        document.getElementById('playerAnalysisResult').style.display = 'none';
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_URL}/players/${playerId}/stats`);
+        const stats = await res.json();
+
+        document.getElementById('playerAnalysisResult').style.display = 'block';
+
+        // 데이터 채우기
+        const totalWon = stats.total_won || 0;
+        document.getElementById('pa-wins').textContent = `${stats.total_wins}회`;
+        document.getElementById('pa-won').textContent = `₩${totalWon.toLocaleString()}`;
+        document.getElementById('pa-games').textContent = `${stats.total_games}회`;
+
+        // 승률 (참가 게임 수가 0이면 0%)
+        const winRate = stats.total_games > 0
+            ? Math.round((stats.total_wins / stats.total_games) * 100)
+            : 0;
+        // *참고: 현재 참가자 기록을 안하므로 total_games는 승리 횟수와 같을 수 있음 (참가만 하고 진 기록이 없으면).
+        // 정확한 승률을 위해서는 '참가자' 데이터가 필수. 현재 간소화 모드에서는 '총 승리 수'가 더 의미 있음.
+
+        if (stats.total_games === stats.total_wins) {
+            document.getElementById('pa-winrate-label').textContent = "승률 (참가 기록 부족)";
+            document.getElementById('pa-winrate').textContent = "-";
+            document.getElementById('pa-games').textContent = "-";
+        } else {
+            document.getElementById('pa-winrate-label').textContent = "승률";
+            document.getElementById('pa-winrate').textContent = `${winRate}%`;
+        }
+
+        // 스타일 분석 (가장 많이 이긴 핸드 등) - API 확장이 필요하지만 일단 간단히 처리
+        // 클라이언트에서 별도 API 없이 텍스트로만 표시 (추후 개발)
+        document.getElementById('pa-style').textContent =
+            `총 ${stats.total_wins}번 승리하며 ${totalWon.toLocaleString()}원을 획득했습니다.`;
+
+    } catch (e) {
+        console.error(e);
+        alert("데이터를 불러오는데 실패했습니다.");
+    }
 }
 
 // --- Player Management ---
@@ -29,6 +111,7 @@ async function loadPlayers() {
 
 function renderWinnerOptions() {
     const select = document.getElementById('winnerSelect');
+    if (!select) return; // 모달이 없는 경우 방지
     select.innerHTML = '<option value="">누가 이겼나요?</option>';
     players.forEach(p => {
         const option = document.createElement('option');

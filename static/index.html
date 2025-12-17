@@ -13,64 +13,118 @@
 <body>
     <div class="app-container">
         <header class="main-header">
-            <h1>🎲 오늘의 세션</h1>
+            <h1>🎲 홀덤 트래커</h1>
             <div class="header-actions">
                 <button class="btn-text" onclick="openRankings()">📜 족보</button>
             </div>
         </header>
 
+        <!-- 탭 네비게이션 -->
+        <nav class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab('today')">📅 오늘의 게임</button>
+            <button class="tab-btn" onclick="switchTab('players')">👤 플레이어 분석</button>
+        </nav>
+
         <main class="content-area">
-            <!-- 1. 차트 섹션 (신규) -->
-            <div class="chart-container card full-width" style="margin-bottom: 20px;">
-                <h2>📊 오늘의 현황</h2>
-                <div style="height: 250px;">
-                    <canvas id="trendChart"></canvas>
-                </div>
-                <div class="chart-stats-row">
-                    <!-- 핸드 비율 파이 차트 -->
-                    <div style="width: 48%; height: 200px; display:inline-block;">
-                        <h3>승리 핸드 비율</h3>
-                        <canvas id="handChart"></canvas>
+            <!-- 탭 1: 오늘의 게임 (기존 대시보드) -->
+            <div id="tab-today" class="tab-content active">
+                <!-- 1. 차트 섹션 -->
+                <div class="chart-container card full-width" style="margin-bottom: 20px;">
+                    <h2>📊 오늘의 현황</h2>
+                    <div style="height: 250px;">
+                        <canvas id="trendChart"></canvas>
                     </div>
-                    <!-- 간단 텍스트 요약 -->
-                    <div style="width: 48%; display:inline-block; vertical-align:top; padding:10px;">
-                        <h3>Today's Top Winner</h3>
-                        <div id="topWinnerDiff" style="font-size: 1.2rem; color: #4CAF50; font-weight: bold;">-</div>
+                    <div class="chart-stats-row">
+                        <!-- 핸드 비율 파이 차트 -->
+                        <div style="width: 48%; height: 200px; display:inline-block;">
+                            <h3>승리 핸드 비율</h3>
+                            <canvas id="handChart"></canvas>
+                        </div>
+                        <!-- 간단 텍스트 요약 -->
+                        <div style="width: 48%; display:inline-block; vertical-align:top; padding:10px;">
+                            <h3>Today's Top Winner</h3>
+                            <div id="topWinnerDiff" style="font-size: 1.2rem; color: #4CAF50; font-weight: bold;">-
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. 리더보드 (오늘 기준) -->
+                <div class="card full-width leaderboard-section">
+                    <div class="section-header">
+                        <h2>🏆 오늘의 순위 (Pot 획득)</h2>
+                        <button class="btn-secondary small" onclick="openAddPlayerModal()">+ 플레이어</button>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>순위</th>
+                                    <th>이름</th>
+                                    <th>승리 횟수</th>
+                                    <th>획득 금액 (Pot)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sessionStatsBody">
+                                <!-- JS Load -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 3. 최근 게임 기록 -->
+                <div class="card full-width history-section" style="margin-top: 16px;">
+                    <div class="section-header">
+                        <h2>최근 게임 기록</h2>
+                        <!-- 전체 보기 기능을 추후 넣을 수 있음 -->
+                    </div>
+                    <div id="recentGamesList" class="game-history-list">
+                        <!-- JS Load -->
                     </div>
                 </div>
             </div>
 
-            <!-- 2. 리더보드 (오늘 기준) -->
-            <div class="card full-width leaderboard-section">
-                <div class="section-header">
-                    <h2>🏆 오늘의 순위 (Pot 획득)</h2>
-                    <button class="btn-secondary small" onclick="openAddPlayerModal()">+ 플레이어</button>
-                </div>
-                <div class="table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>순위</th>
-                                <th>이름</th>
-                                <th>승리 횟수</th>
-                                <th>획득 금액 (Pot)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="sessionStatsBody">
+            <!-- 탭 2: 플레이어 분석 (신규) -->
+            <div id="tab-players" class="tab-content">
+                <div class="card full-width">
+                    <h2>👤 플레이어 상세 분석</h2>
+                    <div class="player-select-wrapper" style="margin-bottom: 20px;">
+                        <select id="analysisPlayerSelect" onchange="loadPlayerAnalysis(this.value)"
+                            style="width: 100%; padding: 12px; font-size: 1rem; background: #2C2C2C; color: white; border: 1px solid #444;">
+                            <option value="">분석할 플레이어를 선택하세요</option>
                             <!-- JS Load -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                        </select>
+                    </div>
 
-            <!-- 3. 최근 게임 기록 -->
-            <div class="card full-width history-section" style="margin-top: 16px;">
-                <div class="section-header">
-                    <h2>최근 게임 기록</h2>
-                    <!-- 전체 보기 기능을 추후 넣을 수 있음 -->
-                </div>
-                <div id="recentGamesList" class="game-history-list">
-                    <!-- JS Load -->
+                    <div id="playerAnalysisResult" style="display: none;">
+                        <div class="stats-grid"
+                            style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px;">
+                            <div class="stat-box"
+                                style="background:#2C2C2C; padding:15px; border-radius:8px; text-align:center;">
+                                <div style="color:#aaa; font-size:0.9rem;">총 승리</div>
+                                <div id="pa-wins" style="font-size:1.5rem; font-weight:bold; color:#4CAF50;">0회</div>
+                            </div>
+                            <div class="stat-box"
+                                style="background:#2C2C2C; padding:15px; border-radius:8px; text-align:center;">
+                                <div style="color:#aaa; font-size:0.9rem;">총 획득 (Pot)</div>
+                                <div id="pa-won" style="font-size:1.5rem; font-weight:bold; color:#FFC107;">0</div>
+                            </div>
+                            <div class="stat-box"
+                                style="background:#2C2C2C; padding:15px; border-radius:8px; text-align:center;">
+                                <div style="color:#aaa; font-size:0.9rem;">참여 게임</div>
+                                <div id="pa-games" style="font-size:1.5rem; font-weight:bold; color:white;">0</div>
+                            </div>
+                            <div class="stat-box"
+                                style="background:#2C2C2C; padding:15px; border-radius:8px; text-align:center;">
+                                <div id="pa-winrate-label" style="color:#aaa; font-size:0.9rem;">승률</div>
+                                <div id="pa-winrate" style="font-size:1.5rem; font-weight:bold; color:#2196F3;">0%</div>
+                            </div>
+                        </div>
+                        <div style="background:#2C2C2C; padding:15px; border-radius:8px; margin-bottom: 20px;">
+                            <h3>승리 핸드 스타일</h3>
+                            <p id="pa-style" style="color: #ccc;">데이터 분석 중...</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
