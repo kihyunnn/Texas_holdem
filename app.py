@@ -169,6 +169,26 @@ def record_game():
         db.rollback()
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/games/<int:game_id>', methods=['DELETE'])
+def delete_game(game_id):
+    try:
+        db = get_db()
+        # 참가자 데이터 먼저 삭제 (FK 제약 조건 때문일 수 있지만, CASCADE 설정 안했으므로 수동 삭제 안전)
+        # 하지만 현재 로직에서 참가자는 안 넣고 있음. 혹시 모르니 실행.
+        db.execute('DELETE FROM game_participants WHERE game_id = ?', (game_id,))
+        
+        # 게임 삭제
+        result = db.execute('DELETE FROM games WHERE id = ?', (game_id,))
+        db.commit()
+        
+        if result.rowcount == 0:
+            return jsonify({'error': '게임을 찾을 수 없습니다'}), 404
+            
+        return jsonify({'message': '게임이 삭제되었습니다'}), 200
+    except Exception as e:
+        db.rollback()
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/games', methods=['GET'])
 def get_games():
     limit = request.args.get('limit', 20, type=int)

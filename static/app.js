@@ -265,7 +265,10 @@ async function loadRecentGames() {
             <div class="game-history-item">
                 <div class="game-header">
                     <span class="text-sec small-date">${time}</span>
-                    <span class="game-pot">₩ ${g.pot_amount.toLocaleString()}</span>
+                    <div>
+                        <span class="game-pot">₩ ${g.pot_amount.toLocaleString()}</span>
+                        <button class="btn-text small" style="color:#FF5252; padding:2px 6px; margin-left:8px;" onclick="deleteGame(${g.id})">🗑️</button>
+                    </div>
                 </div>
                 <div class="d-flex justify-between">
                     <span>
@@ -279,5 +282,23 @@ async function loadRecentGames() {
         }).join('');
     } catch (e) {
         console.error(e);
+    }
+}
+
+async function deleteGame(gameId) {
+    if (!confirm('정말 이 게임 기록을 삭제하시겠습니까?')) return;
+
+    try {
+        const res = await fetch(`${API_URL}/games/${gameId}`, {
+            method: 'DELETE'
+        });
+
+        if (!res.ok) throw new Error('삭제 실패');
+
+        // 화면 갱신: 리더보드와 그래프도 바뀌어야 하므로 전체 대시보드 리로드
+        await loadDashboard();
+
+    } catch (e) {
+        alert(e.message);
     }
 }
