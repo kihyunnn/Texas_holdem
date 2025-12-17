@@ -1,3 +1,4 @@
+/* ==================== Theme Variables ==================== */
 :root {
     --bg-dark: #121212;
     --bg-card: #1E1E1E;
@@ -12,6 +13,21 @@
     --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
 
+[data-theme="light"] {
+    --bg-dark: #F5F5F5;
+    --bg-card: #FFFFFF;
+    --bg-hover: #E0E0E0;
+    --primary: #4CAF50;
+    --primary-hover: #45a049;
+    --accent: #FF9800;
+    --danger: #F44336;
+    --text-main: #212121;
+    --text-sec: #757575;
+    --border: #E0E0E0;
+    --shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ==================== Base ==================== */
 * {
     margin: 0;
     padding: 0;
@@ -23,60 +39,84 @@ body {
     background-color: var(--bg-dark);
     color: var(--text-main);
     line-height: 1.6;
+    transition: background-color 0.3s, color 0.3s;
 }
 
 .app-container {
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
     padding: 0 16px 100px 16px;
-    /* Added bottom padding for FAB */
 }
 
-/* Header */
+/* ==================== Header ==================== */
 .main-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 16px 0;
-    margin-bottom: 24px;
-    border-bottom: 1px solid var(--border);
+    gap: 10px;
 }
 
 .main-header h1 {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     color: var(--accent);
 }
 
-/* Dashboard Layout */
-.dashboard-grid {
+.header-actions {
     display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.card {
-    background-color: var(--bg-card);
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: var(--shadow);
-}
-
-.section-header {
-    display: flex;
-    justify-content: space-between;
+    gap: 8px;
     align-items: center;
+}
+
+/* ==================== Tabs ==================== */
+.tab-nav {
+    display: flex;
+    gap: 4px;
     margin-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
-h2 {
-    font-size: 1.25rem;
-    color: var(--text-main);
-    border-left: 4px solid var(--primary);
-    padding-left: 12px;
-    margin: 0;
+.tab-btn {
+    background: none;
+    border: none;
+    color: var(--text-sec);
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s;
+    white-space: nowrap;
 }
 
-/* Buttons */
+.tab-btn.active {
+    background-color: var(--bg-hover);
+    color: var(--primary);
+}
+
+.tab-content {
+    display: none;
+    animation: fadeIn 0.3s;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* ==================== Buttons ==================== */
 .btn-primary {
     background-color: var(--primary);
     color: white;
@@ -93,6 +133,11 @@ h2 {
     background-color: var(--primary-hover);
 }
 
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 .btn-secondary {
     background-color: var(--bg-hover);
     color: var(--text-main);
@@ -100,6 +145,13 @@ h2 {
     padding: 8px 12px;
     border-radius: 6px;
     cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+    background-color: var(--primary);
+    color: white;
+    border-color: var(--primary);
 }
 
 .btn-text {
@@ -112,95 +164,90 @@ h2 {
     transition: all 0.2s;
 }
 
-.btn-text:hover {
-    color: var(--text-main);
-    background-color: var(--bg-hover);
+.btn-icon {
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    cursor: pointer;
+    padding: 4px;
+}
+
+.btn-icon.small {
+    font-size: 1rem;
 }
 
 .small {
     font-size: 0.85rem;
-    padding: 6px 12px;
+    padding: 6px 10px;
 }
 
-/* Floating Action Button (FAB) */
-.fab-btn {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    /* Default for desktop */
-    left: 50%;
-    transform: translateX(-50%);
-    /* Center on Mobile */
-    width: 90%;
-    max-width: 400px;
-    background-color: var(--primary);
-    color: white;
-    border: none;
-    border-radius: 50px;
-    padding: 16px 32px;
-    font-size: 1.1rem;
-    font-weight: bold;
-    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    z-index: 900;
-    transition: transform 0.2s;
-}
-
-.fab-btn:active {
-    transform: translateX(-50%) scale(0.98);
-}
-
-@media (min-width: 600px) {
-    .fab-btn {
-        left: auto;
-        right: 32px;
-        bottom: 32px;
-        transform: none;
-        width: auto;
-        border-radius: 28px;
-    }
-
-    .fab-btn:active {
-        transform: scale(0.98);
-    }
-}
-
-/* Table */
-.table-container {
-    overflow-x: auto;
-}
-
-.data-table {
+.full-width {
     width: 100%;
-    border-collapse: collapse;
-    min-width: 500px;
 }
 
-.data-table th {
-    text-align: left;
-    padding: 12px;
+/* ==================== Cards ==================== */
+.card {
+    background-color: var(--bg-card);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+}
+
+h2 {
+    font-size: 1.1rem;
+    color: var(--text-main);
+    border-left: 3px solid var(--primary);
+    padding-left: 10px;
+    margin-bottom: 16px;
+}
+
+h3 {
+    font-size: 0.95rem;
     color: var(--text-sec);
+    margin-bottom: 8px;
+}
+
+/* ==================== Filter Section ==================== */
+.filter-section {
+    margin-bottom: 16px;
+    padding-bottom: 16px;
     border-bottom: 1px solid var(--border);
 }
 
-.data-table td {
-    padding: 14px 12px;
-    border-bottom: 1px solid var(--border);
+.filter-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
 }
 
-.profit-positive {
-    color: var(--primary);
+.filter-row select {
+    flex: 1;
+    min-width: 100px;
+    padding: 8px;
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-main);
+    font-size: 0.85rem;
 }
 
-.profit-negative {
-    color: var(--danger);
+.date-range-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 8px;
 }
 
-/* Game History */
+.date-range-row input {
+    padding: 8px;
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-main);
+}
+
+/* ==================== Game History ==================== */
 .game-history-item {
     border-bottom: 1px solid var(--border);
     padding: 12px 0;
@@ -213,20 +260,256 @@ h2 {
 .game-header {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 4px;
+    align-items: center;
+    margin-bottom: 6px;
 }
 
 .game-pot {
     color: var(--accent);
     font-weight: bold;
+    font-size: 0.95rem;
+}
+
+.game-main {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
 .game-winner {
     color: var(--primary);
     font-weight: bold;
+    font-size: 1rem;
 }
 
-/* Modal */
+.game-hand {
+    background: var(--bg-hover);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    color: var(--text-sec);
+}
+
+.ai-comment {
+    background: var(--bg-hover);
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 8px;
+    font-size: 0.85rem;
+    color: var(--text-sec);
+    line-height: 1.5;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-sec);
+}
+
+.empty-state.small {
+    padding: 20px;
+}
+
+/* ==================== Stats Grid ==================== */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.stat-box {
+    background: var(--bg-hover);
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: var(--text-sec);
+    margin-bottom: 4px;
+}
+
+.stat-value {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--text-main);
+}
+
+.stat-value.green {
+    color: var(--primary);
+}
+
+.stat-value.gold {
+    color: var(--accent);
+}
+
+/* ==================== Insight Box ==================== */
+.insight-box {
+    background: var(--bg-hover);
+    padding: 14px;
+    border-radius: 8px;
+}
+
+.insight-box p {
+    color: var(--text-sec);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+/* ==================== Achievements ==================== */
+.achievements-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.achievement-badge {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    padding: 6px 12px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.achievement-icon {
+    font-size: 1rem;
+}
+
+.achievement-name {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #333;
+}
+
+/* ==================== Rivalry ==================== */
+.rivalry-selects {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.rivalry-select {
+    flex: 1;
+    padding: 12px;
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-main);
+    font-size: 1rem;
+}
+
+.vs-text {
+    font-weight: bold;
+    color: var(--danger);
+    font-size: 1.2rem;
+}
+
+.rivalry-comparison {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.rival-card {
+    flex: 1;
+    background: var(--bg-hover);
+    padding: 16px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.rival-name {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.rival-stat {
+    font-size: 0.95rem;
+    color: var(--text-sec);
+}
+
+.rival-stat.gold {
+    color: var(--accent);
+}
+
+.vs-divider {
+    font-size: 1.5rem;
+}
+
+/* ==================== Table ==================== */
+.table-container {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th {
+    text-align: left;
+    padding: 10px 8px;
+    color: var(--text-sec);
+    border-bottom: 1px solid var(--border);
+    font-size: 0.85rem;
+}
+
+.data-table td {
+    padding: 12px 8px;
+    border-bottom: 1px solid var(--border);
+}
+
+.empty-cell {
+    text-align: center;
+    color: var(--text-sec);
+    padding: 20px !important;
+}
+
+.profit-positive {
+    color: var(--primary);
+}
+
+/* ==================== Rankings Image ==================== */
+.rankings-img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+}
+
+/* ==================== FAB ==================== */
+.fab-btn {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 350px;
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 14px 28px;
+    font-size: 1rem;
+    font-weight: bold;
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    z-index: 900;
+}
+
+.fab-btn:active {
+    transform: translateX(-50%) scale(0.98);
+}
+
+/* ==================== Modal ==================== */
 .modal {
     display: none;
     position: fixed;
@@ -234,7 +517,7 @@ h2 {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: rgba(0, 0, 0, 0.85);
     z-index: 1000;
     justify-content: center;
     align-items: center;
@@ -243,14 +526,17 @@ h2 {
 
 .modal-content {
     background-color: var(--bg-card);
-    padding: 24px;
-    border-radius: 16px;
+    padding: 20px;
+    border-radius: 12px;
     width: 100%;
-    max-width: 500px;
+    max-width: 420px;
     max-height: 90vh;
     overflow-y: auto;
-    position: relative;
     animation: slideUp 0.3s ease;
+}
+
+.modal-content.small {
+    max-width: 300px;
 }
 
 @keyframes slideUp {
@@ -269,7 +555,7 @@ h2 {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
 }
 
 .close-btn {
@@ -280,14 +566,14 @@ h2 {
     cursor: pointer;
 }
 
-/* Forms in Modal */
+/* ==================== Forms ==================== */
 .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 16px;
 }
 
 .form-row {
     display: flex;
-    gap: 16px;
+    gap: 12px;
 }
 
 .form-group.half {
@@ -297,81 +583,107 @@ h2 {
 label {
     display: block;
     color: var(--text-sec);
-    margin-bottom: 8px;
-    font-size: 0.9rem;
+    margin-bottom: 6px;
+    font-size: 0.85rem;
 }
 
 input,
 select {
     width: 100%;
-    padding: 12px;
+    padding: 10px;
     background-color: var(--bg-dark);
     border: 1px solid var(--border);
     border-radius: 8px;
     color: var(--text-main);
-    font-size: 1rem;
-    outline: none;
+    font-size: 0.95rem;
 }
 
 input:focus,
 select:focus {
     border-color: var(--primary);
+    outline: none;
 }
 
-.scrollable-list {
-    max-height: 200px;
-    overflow-y: auto;
+.large-select,
+.large-input,
+.large-btn {
+    font-size: 1.1rem !important;
+    padding: 14px !important;
+}
+
+.full-width-select {
+    width: 100%;
+    padding: 12px;
+    background: var(--bg-dark);
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 8px;
-    background-color: var(--bg-dark);
-}
-
-.player-select-item {
-    display: flex;
-    align-items: center;
-    padding: 10px;
-    border-bottom: 1px solid var(--border);
-}
-
-.player-select-item:last-child {
-    border-bottom: none;
-}
-
-.player-select-item.checked {
-    background-color: rgba(76, 175, 80, 0.1);
-}
-
-.player-checkbox {
-    width: 20px;
-    height: 20px;
-    margin-right: 12px;
-    accent-color: var(--primary);
-}
-
-.player-bet-input {
-    width: 100px !important;
-    margin-left: auto;
-    padding: 6px !important;
-    text-align: right;
+    color: var(--text-main);
+    font-size: 1rem;
 }
 
 .modal-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 12px;
-    margin-top: 24px;
+    gap: 10px;
+    margin-top: 16px;
 }
 
 .text-sec {
     color: var(--text-sec);
-    font-size: 0.9rem;
+    font-size: 0.85rem;
 }
 
-.justify-between {
-    justify-content: space-between;
+/* ==================== Responsive ==================== */
+@media (max-width: 599px) {
+    .main-header h1 {
+        font-size: 1.2rem;
+    }
+
+    .tab-btn {
+        font-size: 0.8rem;
+        padding: 6px 10px;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .form-row {
+        flex-direction: column;
+    }
+
+    .rivalry-selects {
+        flex-direction: column;
+    }
+
+    .rivalry-select {
+        width: 100%;
+    }
+
+    .vs-text {
+        align-self: center;
+    }
 }
 
-.d-flex {
-    display: flex;
+@media (min-width: 600px) {
+    .fab-btn {
+        width: auto;
+        left: auto;
+        right: 24px;
+        transform: none;
+    }
+
+    .fab-btn:active {
+        transform: scale(0.98);
+    }
+}
+
+@media (min-width: 1024px) {
+    .app-container {
+        padding: 0 32px 100px 32px;
+    }
+
+    .card {
+        padding: 20px;
+    }
 }
