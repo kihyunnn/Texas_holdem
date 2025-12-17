@@ -11,5 +11,4 @@ services:
     env_file:
       - .env
     restart: unless-stopped
-    # For production use, uncomment the following line and comment out the CMD in Dockerfile
-    # command: gunicorn --bind 0.0.0.0:5000 app:app
+    # Gunicorn command is defined in Dockerfile
