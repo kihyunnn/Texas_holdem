@@ -83,7 +83,7 @@ async function loadPlayers() {
 function renderWinnerOptions() {
     const select = document.getElementById('winnerSelect');
     if (!select) return;
-    select.innerHTML = '<option value="">누가 이겼나요?</option>';
+    select.innerHTML = '<option value="">플레이어 선택</option>';
     players.forEach(p => {
         const option = document.createElement('option');
         option.value = p.id;
