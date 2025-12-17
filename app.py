@@ -4,7 +4,7 @@ import sqlite3
 import os
 from contextlib import contextmanager
 
-app = Flask(__name__, static_folder='static')
+app = Flask(__name__, static_folder='static', static_url_path='')
 CORS(app)
 
 DATABASE = 'poker.db'
@@ -62,11 +62,7 @@ def init_db():
 
 @app.route('/')
 def index():
-    return app.send_static_file('index.html')
-
-@app.route('/static/<path:path>')
-def send_static(path):
-    return send_from_directory('static', path)
+    return send_from_directory('static', 'index.html')
 
 @app.route('/api/players', methods=['GET'])
 def get_players():

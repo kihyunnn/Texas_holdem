@@ -72,7 +72,7 @@ function togglePlayerBetInput(id) {
 // --- Modals ---
 function openRankings() {
     // 족보는 새 창 팝업으로
-    window.open('static/rankings.html', 'PokerRankings', 'width=600,height=800,scrollbars=yes');
+    window.open('rankings.html', 'PokerRankings', 'width=600,height=800,scrollbars=yes');
 }
 
 function openGameModal() {
