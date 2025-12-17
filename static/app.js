@@ -4,17 +4,15 @@ let handChart = null;
 
 // --- 초기화 ---
 document.addEventListener('DOMContentLoaded', () => {
-    // 탭 상태 복원 또는 기본값
-    const lastTab = localStorage.getItem('lastTab') || 'today';
+    const lastTab = localStorage.getItem('lastTab') || 'records'; // 기본 탭: 기록
     switchTab(lastTab);
 });
 
 function switchTab(tabId) {
-    // 탭 UI 전환
+    // UI 전환
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
 
-    // 버튼은 onclick에서 전달된 tabId에 해당하는 것만 active
     const activeBtn = document.querySelector(`.tab-btn[onclick="switchTab('${tabId}')"]`);
     if (activeBtn) activeBtn.classList.add('active');
 
@@ -22,78 +20,20 @@ function switchTab(tabId) {
     localStorage.setItem('lastTab', tabId);
 
     // 데이터 로드
-    if (tabId === 'today') {
-        loadDashboard();
+    loadPlayers(); // 플레이어 목록은 모달용으로 항상 필요
+
+    if (tabId === 'records') {
+        loadRecentGames();
+    } else if (tabId === 'stats') {
+        loadStatsTab();
     } else if (tabId === 'players') {
         loadPlayerAnalysisTab();
     }
 }
 
-async function loadDashboard() {
-    await loadPlayers();
-    await loadSessionStats(); // 오늘 세션 통계
-    await loadRecentGames();  // 오늘 게임 기록
-    await loadCharts();       // 차트
-}
-
-async function loadPlayerAnalysisTab() {
-    await loadPlayers();
-    // 플레이어 선택 목록 렌더링 (분석 탭용)
-    const select = document.getElementById('analysisPlayerSelect');
-    // 기존 옵션 유지하고 추가
-    if (select.children.length <= 1) { // 로드 안된 경우만
-        players.forEach(p => {
-            const option = document.createElement('option');
-            option.value = p.id;
-            option.textContent = p.name;
-            select.appendChild(option);
-        });
-    }
-}
-
-async function loadPlayerAnalysis(playerId) {
-    if (!playerId) {
-        document.getElementById('playerAnalysisResult').style.display = 'none';
-        return;
-    }
-
-    try {
-        const res = await fetch(`${API_URL}/players/${playerId}/stats`);
-        const stats = await res.json();
-
-        document.getElementById('playerAnalysisResult').style.display = 'block';
-
-        // 데이터 채우기
-        const totalWon = stats.total_won || 0;
-        document.getElementById('pa-wins').textContent = `${stats.total_wins}회`;
-        document.getElementById('pa-won').textContent = `₩${totalWon.toLocaleString()}`;
-        document.getElementById('pa-games').textContent = `${stats.total_games}회`;
-
-        // 승률 (참가 게임 수가 0이면 0%)
-        const winRate = stats.total_games > 0
-            ? Math.round((stats.total_wins / stats.total_games) * 100)
-            : 0;
-        // *참고: 현재 참가자 기록을 안하므로 total_games는 승리 횟수와 같을 수 있음 (참가만 하고 진 기록이 없으면).
-        // 정확한 승률을 위해서는 '참가자' 데이터가 필수. 현재 간소화 모드에서는 '총 승리 수'가 더 의미 있음.
-
-        if (stats.total_games === stats.total_wins) {
-            document.getElementById('pa-winrate-label').textContent = "승률 (참가 기록 부족)";
-            document.getElementById('pa-winrate').textContent = "-";
-            document.getElementById('pa-games').textContent = "-";
-        } else {
-            document.getElementById('pa-winrate-label').textContent = "승률";
-            document.getElementById('pa-winrate').textContent = `${winRate}%`;
-        }
-
-        // 스타일 분석 (가장 많이 이긴 핸드 등) - API 확장이 필요하지만 일단 간단히 처리
-        // 클라이언트에서 별도 API 없이 텍스트로만 표시 (추후 개발)
-        document.getElementById('pa-style').textContent =
-            `총 ${stats.total_wins}번 승리하며 ${totalWon.toLocaleString()}원을 획득했습니다.`;
-
-    } catch (e) {
-        console.error(e);
-        alert("데이터를 불러오는데 실패했습니다.");
-    }
+async function loadStatsTab() {
+    await loadSessionStats();
+    await loadCharts();
 }
 
 // --- Player Management ---
@@ -111,7 +51,7 @@ async function loadPlayers() {
 
 function renderWinnerOptions() {
     const select = document.getElementById('winnerSelect');
-    if (!select) return; // 모달이 없는 경우 방지
+    if (!select) return;
     select.innerHTML = '<option value="">누가 이겼나요?</option>';
     players.forEach(p => {
         const option = document.createElement('option');
@@ -176,7 +116,6 @@ async function handleGameSubmit(e) {
     const notes = document.getElementById('gameNotes').value;
     const winningHand = document.getElementById('winningHand').value;
 
-    // 간소화됨: 참가자 목록 없이, 승자와 팟만 전송
     const payload = {
         winner_id: parseInt(winnerId),
         pot_amount: parseInt(potAmount),
@@ -184,7 +123,6 @@ async function handleGameSubmit(e) {
         notes
     };
 
-    // 로딩 표시
     const submitBtn = e.target.querySelector('button[type="submit"]');
     const originalText = submitBtn.textContent;
     submitBtn.textContent = 'AI 분석 중...';
@@ -208,7 +146,10 @@ async function handleGameSubmit(e) {
         }
 
         closeGameModal();
-        await loadDashboard(); // 전체 갱신
+
+        // 현재 탭 새로고침
+        const currentTab = localStorage.getItem('lastTab') || 'records';
+        switchTab(currentTab);
 
     } catch (err) {
         alert(err.message);
@@ -218,126 +159,16 @@ async function handleGameSubmit(e) {
     }
 }
 
-// --- Stats & Charts ---
-async function loadSessionStats() {
-    try {
-        // 오늘자 세션 통계 가져오기
-        const res = await fetch(`${API_URL}/stats/session`);
-        const data = await res.json();
-
-        const tbody = document.getElementById('sessionStatsBody');
-
-        if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">오늘 기록된 게임이 없습니다.</td></tr>';
-            document.getElementById('topWinnerDiff').textContent = '-';
-            return;
-        }
-
-        // Top Winner 표시
-        document.getElementById('topWinnerDiff').textContent = `${data[0].name} (₩${data[0].total_won.toLocaleString()})`;
-
-        tbody.innerHTML = data.map((p, idx) => `
-            <tr>
-                <td>${idx + 1}</td>
-                <td><strong>${p.name}</strong></td>
-                <td>${p.wins}승</td>
-                <td class="profit-positive">+ ₩${p.total_won.toLocaleString()}</td>
-            </tr>
-        `).join('');
-    } catch (e) {
-        console.error(e);
-    }
-}
-
-async function loadCharts() {
-    // 1. Trend Chart (오늘의 Pot 획득 추이 - 예시로 누적은 아니지만 게임별 pot 보여주기)
-    try {
-        const res = await fetch(`${API_URL}/stats/trend`);
-        const games = await res.json();
-
-        const ctxTrend = document.getElementById('trendChart').getContext('2d');
-
-        const labels = games.map((g, i) => `#${i + 1} (${g.winner_name})`);
-        const dataPoints = games.map(g => g.pot_amount);
-
-        if (trendChart) trendChart.destroy();
-
-        trendChart = new Chart(ctxTrend, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Game Pot Size',
-                    data: dataPoints,
-                    borderColor: '#4CAF50',
-                    backgroundColor: 'rgba(76, 175, 80, 0.2)',
-                    tension: 0.3,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: { beginAtZero: true, grid: { color: '#333' } },
-                    x: { display: false } // 너무 많으면 라벨 숨김
-                },
-                plugins: {
-                    legend: { display: false }
-                }
-            }
-        });
-
-    } catch (e) { console.error(e); }
-
-    // 2. Hand Chart
-    try {
-        const res = await fetch(`${API_URL}/stats/hand?scope=today`);
-        const stats = await res.json();
-
-        const ctxHand = document.getElementById('handChart').getContext('2d');
-
-        // 데이터가 없으면 차트 숨기기
-        if (stats.length === 0) return;
-
-        const labels = stats.map(s => s.winning_hand);
-        const data = stats.map(s => s.count);
-
-        if (handChart) handChart.destroy();
-
-        handChart = new Chart(ctxHand, {
-            type: 'doughnut',
-            data: {
-                labels: labels,
-                datasets: [{
-                    data: data,
-                    backgroundColor: [
-                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
-                    ],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'right', labels: { color: '#aaa', boxWidth: 10 } }
-                }
-            }
-        });
-    } catch (e) { console.error(e); }
-}
-
-
+// --- 기록 탭 ---
 async function loadRecentGames() {
     try {
-        const res = await fetch(`${API_URL}/games?limit=10&scope=today`);
+        const res = await fetch(`${API_URL}/games?limit=20&scope=today`);
         const games = await res.json();
 
         const container = document.getElementById('recentGamesList');
 
         if (games.length === 0) {
-            container.innerHTML = '<div class="text-sec" style="text-align:center; padding: 20px;">오늘 게임 기록이 없습니다.</div>';
+            container.innerHTML = '<div class="empty-state">📭 오늘 게임 기록이 없습니다.<br><span style="font-size:0.9rem; color:#888;">하단의 RECORD 버튼을 눌러 게임을 기록해보세요!</span></div>';
             return;
         }
 
@@ -378,10 +209,166 @@ async function deleteGame(gameId) {
 
         if (!res.ok) throw new Error('삭제 실패');
 
-        // 화면 갱신: 리더보드와 그래프도 바뀌어야 하므로 전체 대시보드 리로드
-        await loadDashboard();
+        // 현재 탭 새로고침
+        const currentTab = localStorage.getItem('lastTab') || 'records';
+        switchTab(currentTab);
 
     } catch (e) {
         alert(e.message);
+    }
+}
+
+// --- 통계 탭 ---
+async function loadSessionStats() {
+    try {
+        const res = await fetch(`${API_URL}/stats/session`);
+        const data = await res.json();
+
+        const tbody = document.getElementById('sessionStatsBody');
+
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">오늘 기록된 게임이 없습니다.</td></tr>';
+            document.getElementById('topWinnerDiff').textContent = '-';
+            return;
+        }
+
+        document.getElementById('topWinnerDiff').textContent = `${data[0].name} (₩${data[0].total_won.toLocaleString()})`;
+
+        tbody.innerHTML = data.map((p, idx) => `
+            <tr>
+                <td>${idx + 1}</td>
+                <td><strong>${p.name}</strong></td>
+                <td>${p.wins}승</td>
+                <td class="profit-positive">+ ₩${p.total_won.toLocaleString()}</td>
+            </tr>
+        `).join('');
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+async function loadCharts() {
+    // Trend Chart
+    try {
+        const res = await fetch(`${API_URL}/stats/trend`);
+        const games = await res.json();
+
+        const ctxTrend = document.getElementById('trendChart').getContext('2d');
+
+        const labels = games.map((g, i) => `#${i + 1}`);
+        const dataPoints = games.map(g => g.pot_amount);
+
+        if (trendChart) trendChart.destroy();
+
+        trendChart = new Chart(ctxTrend, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Pot Size',
+                    data: dataPoints,
+                    borderColor: '#4CAF50',
+                    backgroundColor: 'rgba(76, 175, 80, 0.2)',
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#333' } },
+                    x: { display: games.length > 10 ? false : true }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    } catch (e) { console.error(e); }
+
+    // Hand Chart
+    try {
+        const res = await fetch(`${API_URL}/stats/hand?scope=today`);
+        const stats = await res.json();
+
+        if (stats.length === 0) return;
+
+        const ctxHand = document.getElementById('handChart').getContext('2d');
+        const labels = stats.map(s => s.winning_hand);
+        const data = stats.map(s => s.count);
+
+        if (handChart) handChart.destroy();
+
+        handChart = new Chart(ctxHand, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'right', labels: { color: '#aaa', boxWidth: 10 } }
+                }
+            }
+        });
+    } catch (e) { console.error(e); }
+}
+
+// --- 플레이어 분석 탭 ---
+async function loadPlayerAnalysisTab() {
+    const select = document.getElementById('analysisPlayerSelect');
+    if (select.children.length <= 1) {
+        players.forEach(p => {
+            const option = document.createElement('option');
+            option.value = p.id;
+            option.textContent = p.name;
+            select.appendChild(option);
+        });
+    }
+}
+
+async function loadPlayerAnalysis(playerId) {
+    if (!playerId) {
+        document.getElementById('playerAnalysisResult').style.display = 'none';
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_URL}/players/${playerId}/stats`);
+        const stats = await res.json();
+
+        document.getElementById('playerAnalysisResult').style.display = 'block';
+
+        const totalWon = stats.total_won || 0;
+        document.getElementById('pa-wins').textContent = `${stats.total_wins}회`;
+        document.getElementById('pa-won').textContent = `₩${totalWon.toLocaleString()}`;
+        document.getElementById('pa-games').textContent = `${stats.total_games}회`;
+
+        const winRate = stats.total_games > 0
+            ? Math.round((stats.total_wins / stats.total_games) * 100)
+            : 0;
+
+        if (stats.total_games === stats.total_wins) {
+            document.getElementById('pa-winrate-label').textContent = "승률 (참가 기록 부족)";
+            document.getElementById('pa-winrate').textContent = "-";
+            document.getElementById('pa-games').textContent = "-";
+        } else {
+            document.getElementById('pa-winrate-label').textContent = "승률";
+            document.getElementById('pa-winrate').textContent = `${winRate}%`;
+        }
+
+        document.getElementById('pa-style').textContent =
+            `총 ${stats.total_wins}번 승리하며 ${totalWon.toLocaleString()}원을 획득했습니다.`;
+
+    } catch (e) {
+        console.error(e);
+        alert("데이터를 불러오는데 실패했습니다.");
     }
 }

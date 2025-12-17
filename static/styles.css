@@ -272,6 +272,13 @@ h2 {
     font-weight: bold;
 }
 
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-sec);
+    font-size: 1.1rem;
+}
+
 /* Modal */
 .modal {
     display: none;
