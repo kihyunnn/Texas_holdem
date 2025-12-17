@@ -1,0 +1,334 @@
+:root {
+    --bg-dark: #121212;
+    --bg-card: #1E1E1E;
+    --bg-hover: #2C2C2C;
+    --primary: #4CAF50; /* Poker Green */
+    --primary-hover: #45a049;
+    --accent: #FFC107; /* Gold */
+    --danger: #FF5252;
+    --text-main: #FFFFFF;
+    --text-sec: #B0B0B0;
+    --border: #333333;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    line-height: 1.6;
+}
+
+.app-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 16px 80px 16px; /* Bottom padding for mobile scrolling */
+}
+
+/* Header & Nav */
+.main-header {
+    position: sticky;
+    top: 0;
+    background-color: var(--bg-dark);
+    padding: 16px 0;
+    z-index: 100;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+}
+
+.main-header h1 {
+    font-size: 1.5rem;
+    margin-bottom: 16px;
+    text-align: center;
+    color: var(--accent);
+}
+
+.main-nav {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.nav-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-sec);
+    padding: 8px 16px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 20px;
+    transition: all 0.2s;
+}
+
+.nav-btn:hover {
+    color: var(--text-main);
+    background-color: var(--bg-hover);
+}
+
+.nav-btn.active {
+    color: var(--bg-dark);
+    background-color: var(--primary);
+    font-weight: 600;
+}
+
+/* Common Layout */
+.tab-content {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.card {
+    background-color: var(--bg-card);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+}
+
+h2 {
+    font-size: 1.25rem;
+    margin-bottom: 20px;
+    color: var(--text-main);
+    border-left: 4px solid var(--primary);
+    padding-left: 12px;
+}
+
+/* Forms */
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    color: var(--text-sec);
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+}
+
+input[type="text"],
+input[type="number"],
+select {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--bg-dark);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-main);
+    font-size: 1rem;
+    outline: none;
+}
+
+input:focus, select:focus {
+    border-color: var(--primary);
+}
+
+/* Player Selection List in Form */
+.player-list {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.player-select-item {
+    display: flex;
+    align-items: center;
+    background-color: var(--bg-dark);
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+.player-select-item.checked {
+    border-color: var(--primary);
+    background-color: rgba(76, 175, 80, 0.1);
+}
+
+.player-checkbox {
+    width: 20px;
+    height: 20px;
+    margin-right: 12px;
+    accent-color: var(--primary);
+}
+
+.player-bet-input {
+    width: 100px !important;
+    margin-left: auto;
+    padding: 8px !important;
+    text-align: right;
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+}
+
+.btn-secondary {
+    background-color: var(--bg-hover);
+    color: var(--text-main);
+    border: 1px solid var(--border);
+}
+
+.small {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.btn-text {
+    background: none;
+    border: none;
+    color: var(--text-sec);
+    padding: 8px 16px;
+    cursor: pointer;
+}
+
+/* Tables */
+.table-container {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 500px;
+}
+
+.data-table th {
+    text-align: left;
+    padding: 12px;
+    color: var(--text-sec);
+    font-weight: 500;
+    border-bottom: 1px solid var(--border);
+}
+
+.data-table td {
+    padding: 14px 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+.profit-positive { color: var(--primary); }
+.profit-negative { color: var(--danger); }
+
+/* Rankings */
+.ranking-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.ranking-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background-color: var(--bg-dark);
+    border-radius: 8px;
+}
+
+.rank-info h3 {
+    font-size: 1rem;
+    color: var(--accent);
+}
+
+.rank-info p {
+    font-size: 0.85rem;
+    color: var(--text-sec);
+}
+
+.cards-preview {
+    font-family: monospace;
+    font-size: 0.9rem;
+    background-color: var(--bg-card);
+    padding: 6px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+}
+
+.rank-badge {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    background-color: var(--border);
+    color: var(--text-sec);
+    text-align: center;
+    line-height: 24px;
+    border-radius: 50%;
+    font-size: 0.8rem;
+    margin-right: 8px;
+    margin-bottom: 4px;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.7);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: var(--bg-card);
+    padding: 24px;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 400px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+/* Utils */
+.d-flex { display: flex; }
+.justify-between { justify-content: space-between; }
+.text-sec { color: var(--text-sec); font-size: 0.9rem; }
+
+/* Recent Games */
+.game-history-item {
+    border-bottom: 1px solid var(--border);
+    padding: 16px 0;
+}
+.game-history-item:last-child { border-bottom: none; }
+.game-header { margin-bottom: 8px; }
+.game-winner { color: var(--primary); font-weight: bold; }
+.game-pot { color: var(--accent); font-weight: bold; }
