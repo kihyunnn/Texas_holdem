@@ -1,4 +1,4 @@
-from flask import Flask, g, request, jsonify
+from flask import Flask, g, request, jsonify, send_from_directory
 from flask_cors import CORS
 import sqlite3
 import os
@@ -63,6 +63,10 @@ def init_db():
 @app.route('/')
 def index():
     return app.send_static_file('index.html')
+
+@app.route('/static/<path:path>')
+def send_static(path):
+    return send_from_directory('static', path)
 
 @app.route('/api/players', methods=['GET'])
 def get_players():

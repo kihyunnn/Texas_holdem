@@ -1,35 +1,13 @@
 const API_URL = '/api';
 
-// --- 초기화 및 탭 관리 ---
+// --- 초기화 ---
 document.addEventListener('DOMContentLoaded', () => {
-    init();
+    loadDashboard();
 });
 
-async function init() {
-    await loadPlayers();
-    await loadStats();
-
-    // 탭 상태 복원 (선택사항)
-    const savedTab = localStorage.getItem('lastTab') || 'record';
-    switchTab(savedTab);
-}
-
-function switchTab(tabId) {
-    // UI 업데이트
-    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
-
-    document.getElementById(tabId).classList.add('active');
-    document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
-
-    // 데이터 새로고침
-    if (tabId === 'stats') {
-        loadStats();
-    } else if (tabId === 'record') {
-        loadPlayers(); // 최신 플레이어 목록 갱신
-    }
-
-    localStorage.setItem('lastTab', tabId);
+async function loadDashboard() {
+    await loadPlayers(); // 승자 선택 옵션 및 모달 내 목록 준비
+    await loadStats();   // 통계 및 기록 로드
 }
 
 // --- Player Management ---
@@ -51,7 +29,7 @@ function renderPlayerSelectionList() {
     const container = document.getElementById('playerSelectionList');
 
     if (players.length === 0) {
-        container.innerHTML = '<div class="text-sec">등록된 플레이어가 없습니다.</div>';
+        container.innerHTML = '<div class="text-sec" style="padding:10px; text-align:center;">플레이어가 없습니다. 추가해주세요.</div>';
         return;
     }
 
@@ -66,8 +44,7 @@ function renderPlayerSelectionList() {
 
 function renderWinnerOptions() {
     const select = document.getElementById('winnerSelect');
-    // 첫 옵션 유지
-    select.innerHTML = '<option value="">승자를 선택하세요</option>';
+    select.innerHTML = '<option value="">선택하세요</option>';
     players.forEach(p => {
         const option = document.createElement('option');
         option.value = p.id;
@@ -90,24 +67,28 @@ function togglePlayerBetInput(id) {
         item.classList.remove('checked');
         input.value = '';
     }
-
-    calculateTotalPot();
 }
 
-// 자동 팟 계산 (선택사항, 사용자가 직접 입력도 가능)
-function calculateTotalPot() {
-    // const inputs = document.querySelectorAll('.player-bet-input:not(:disabled)');
-    // let total = 0;
-    // inputs.forEach(input => {
-    //     total += Number(input.value || 0);
-    // });
-    // document.getElementById('potAmount').value = total;
+// --- Modals ---
+function openRankings() {
+    // 족보는 새 창 팝업으로
+    window.open('static/rankings.html', 'PokerRankings', 'width=600,height=800,scrollbars=yes');
 }
 
-// --- Add Player Modal ---
+function openGameModal() {
+    document.getElementById('gameModal').style.display = 'flex';
+}
+
+function closeGameModal() {
+    document.getElementById('gameModal').style.display = 'none';
+    document.getElementById('gameForm').reset();
+    document.querySelectorAll('.player-select-item').forEach(el => el.classList.remove('checked'));
+    document.querySelectorAll('.player-bet-input').forEach(el => el.disabled = true);
+}
+
 function openAddPlayerModal() {
     document.getElementById('addPlayerModal').style.display = 'flex';
-    document.getElementById('newPlayerName').focus();
+    setTimeout(() => document.getElementById('newPlayerName').focus(), 100);
 }
 
 function closeAddPlayerModal() {
@@ -115,6 +96,7 @@ function closeAddPlayerModal() {
     document.getElementById('newPlayerName').value = '';
 }
 
+// --- Actions ---
 async function submitNewPlayer() {
     const nameInput = document.getElementById('newPlayerName');
     const name = nameInput.value.trim();
@@ -133,25 +115,22 @@ async function submitNewPlayer() {
             throw new Error(err.error || '오류가 발생했습니다');
         }
 
-        // 성공
         closeAddPlayerModal();
         await loadPlayers();
-        // 방금 추가한 플레이어 자동 선택? (Optional)
+        // 리더보드도 갱신하여 새 플레이어가 보이게 함
+        await loadStats();
     } catch (e) {
         alert(e.message);
     }
 }
 
-// --- Game Logic ---
 async function handleGameSubmit(e) {
     e.preventDefault();
 
-    // 데이터 수집
     const winnerId = document.getElementById('winnerSelect').value;
     const potAmount = document.getElementById('potAmount').value;
     const notes = document.getElementById('gameNotes').value;
 
-    // 참가자 수집
     const participants = [];
     const checkboxes = document.querySelectorAll('.player-checkbox:checked');
 
@@ -164,14 +143,8 @@ async function handleGameSubmit(e) {
         });
     });
 
-    // 검증
-    if (participants.length < 2) {
-        return alert("최소 2명 이상의 플레이어가 필요합니다.");
-    }
-
-    if (!participants.find(p => p.player_id == winnerId)) {
-        return alert("승자는 반드시 참가자 중에 있어야 합니다.");
-    }
+    if (participants.length < 2) return alert("최소 2명 이상 참여해야 합니다.");
+    if (!participants.find(p => p.player_id == winnerId)) return alert("승자는 참여자 목록에 있어야 합니다.");
 
     const payload = {
         winner_id: parseInt(winnerId),
@@ -189,21 +162,16 @@ async function handleGameSubmit(e) {
 
         if (!res.ok) throw new Error("게임 기록 실패");
 
-        alert("게임이 기록되었습니다! 💸");
+        // 성공 처리
+        closeGameModal();
+        await loadStats(); // 대시보드 갱신
 
-        // 폼 초기화
-        e.target.reset();
-        document.querySelectorAll('.player-select-item').forEach(el => el.classList.remove('checked'));
-        document.querySelectorAll('.player-bet-input').forEach(el => el.disabled = true);
-
-        // 통계 탭으로 이동 or 머무르기
-        loadStats(); // 배경 데이터 갱신
     } catch (err) {
         alert(err.message);
     }
 }
 
-// --- Stats Logic ---
+// --- Stats & Dashboard ---
 async function loadStats() {
     await Promise.all([loadLeaderboard(), loadRecentGames()]);
 }
@@ -216,7 +184,7 @@ async function loadLeaderboard() {
         const tbody = document.getElementById('leaderboardBody');
 
         if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">아직 게임 기록이 없습니다.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;" class="text-sec">플레이어가 없습니다.</td></tr>';
             return;
         }
 
@@ -245,26 +213,26 @@ async function loadRecentGames() {
         const container = document.getElementById('recentGamesList');
 
         if (games.length === 0) {
-            container.innerHTML = '<div class="text-sec" style="text-align:center;">기록이 없습니다.</div>';
+            container.innerHTML = '<div class="text-sec" style="text-align:center; padding: 20px;">아직 게임 기록이 없습니다.</div>';
             return;
         }
 
         container.innerHTML = games.map(g => {
             const date = new Date(g.played_at).toLocaleString('ko-KR', {
-                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit'
             });
 
             return `
             <div class="game-history-item">
-                <div class="d-flex justify-between game-header">
-                    <span class="text-sec">${date}</span>
+                <div class="game-header">
+                    <span class="text-sec small-date">${date}</span>
                     <span class="game-pot">Pot: ${g.pot_amount.toLocaleString()}</span>
                 </div>
                 <div class="d-flex justify-between">
-                    <span>Winner: <span class="game-winner text-gold">${g.winner_name}</span></span>
-                    <span class="text-sec">${g.participants.length}명 참여</span>
+                    <span>Winner: <span class="game-winner">${g.winner_name}</span></span>
+                    <span class="text-sec">${g.participants.length}명</span>
                 </div>
-                ${g.notes ? `<div class="text-sec" style="margin-top: 4px; font-size: 0.8rem;">📝 ${g.notes}</div>` : ''}
+                ${g.notes ? `<div class="text-sec" style="margin-top:4px; font-size:0.85rem;">📝 ${g.notes}</div>` : ''}
             </div>
             `;
         }).join('');
