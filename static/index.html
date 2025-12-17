@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>텍사스 홀덤 트래커</title>
+    <title>홀덤 트래커</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -22,31 +22,61 @@
             </div>
         </header>
 
-        <!-- 탭 네비게이션 (4개) -->
+        <!-- 5탭 네비게이션 -->
         <nav class="tab-nav">
             <button class="tab-btn active" onclick="switchTab('records')">📝 기록</button>
             <button class="tab-btn" onclick="switchTab('stats')">📊 통계</button>
-            <button class="tab-btn" onclick="switchTab('players')">👤 플레이어</button>
+            <button class="tab-btn" onclick="switchTab('players')">👤 분석</button>
+            <button class="tab-btn" onclick="switchTab('rivalry')">⚔️ 라이벌</button>
             <button class="tab-btn" onclick="switchTab('rankings')">📜 족보</button>
         </nav>
 
         <main class="content-area">
-            <!-- 탭 1: 기록 (첫 화면 - 게임 리스트만) -->
+            <!-- 탭 1: 기록 -->
             <div id="tab-records" class="tab-content active">
                 <div class="card full-width">
-                    <div class="section-header">
-                        <h2>최근 게임 기록</h2>
-                        <span class="text-sec">오늘 자정부터의 기록</span>
+                    <!-- 필터 UI -->
+                    <div class="filter-section">
+                        <div class="filter-row">
+                            <select id="filterScope" onchange="applyFilters()">
+                                <option value="today">오늘</option>
+                                <option value="all">전체</option>
+                                <option value="custom">기간 선택</option>
+                            </select>
+                            <select id="filterPlayer" onchange="applyFilters()">
+                                <option value="">모든 플레이어</option>
+                            </select>
+                            <select id="filterHand" onchange="applyFilters()">
+                                <option value="">모든 핸드</option>
+                                <option value="Royal Flush">로열 플러시</option>
+                                <option value="Straight Flush">스트레이트 플러시</option>
+                                <option value="Four of a Kind">포 카드</option>
+                                <option value="Full House">풀 하우스</option>
+                                <option value="Flush">플러시</option>
+                                <option value="Straight">스트레이트</option>
+                                <option value="Three of a Kind">트리플</option>
+                                <option value="Two Pair">투 페어</option>
+                                <option value="One Pair">원 페어</option>
+                                <option value="High Card">하이 카드</option>
+                                <option value="Fold Win">폴드 승</option>
+                            </select>
+                        </div>
+                        <div id="customDateRange" class="date-range-row" style="display: none;">
+                            <input type="date" id="dateFrom">
+                            <span>~</span>
+                            <input type="date" id="dateTo">
+                            <button class="btn-secondary small" onclick="applyFilters()">적용</button>
+                        </div>
                     </div>
+
                     <div id="recentGamesList" class="game-history-list">
-                        <!-- JS로 로드됨 -->
+                        <!-- JS -->
                     </div>
                 </div>
             </div>
 
-            <!-- 탭 2: 통계 (차트 & 리더보드) -->
+            <!-- 탭 2: 통계 -->
             <div id="tab-stats" class="tab-content">
-                <!-- 차트 섹션 -->
                 <div class="chart-container card full-width" style="margin-bottom: 20px;">
                     <h2>📊 오늘의 현황</h2>
                     <div style="height: 250px; margin-bottom: 20px;">
@@ -59,13 +89,12 @@
                         </div>
                         <div style="width: 48%; display:inline-block; vertical-align:top; padding:10px;">
                             <h3>Today's Winner</h3>
-                            <div id="topWinnerDiff" style="font-size: 1.2rem; color: #4CAF50; font-weight: bold;">-
-                            </div>
+                            <div id="topWinnerDiff"
+                                style="font-size: 1.2rem; color: var(--primary); font-weight: bold;">-</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 리더보드 -->
                 <div class="card full-width leaderboard-section">
                     <h2>🏆 오늘의 순위</h2>
                     <div class="table-container">
@@ -75,73 +104,103 @@
                                     <th>순위</th>
                                     <th>이름</th>
                                     <th>승수</th>
-                                    <th>획득 금액</th>
+                                    <th>획득</th>
                                 </tr>
                             </thead>
-                            <tbody id="sessionStatsBody">
-                                <!-- JS -->
-                            </tbody>
+                            <tbody id="sessionStatsBody"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- 탭 3: 플레이어 분석 -->
+            <!-- 탭 3: 플레이어 분석 (업적 포함) -->
             <div id="tab-players" class="tab-content">
                 <div class="card full-width">
-                    <h2>👤 플레이어 상세 분석</h2>
-                    <div class="player-select-wrapper" style="margin-bottom: 20px;">
-                        <select id="analysisPlayerSelect" onchange="loadPlayerAnalysis(this.value)"
-                            style="width: 100%; padding: 12px; font-size: 1rem; background: #2C2C2C; color: white; border: 1px solid #444;">
-                            <option value="">분석할 플레이어를 선택하세요</option>
-                        </select>
-                    </div>
+                    <h2>👤 플레이어 분석</h2>
+                    <select id="analysisPlayerSelect" onchange="loadPlayerAnalysis(this.value)"
+                        class="full-width-select">
+                        <option value="">플레이어 선택</option>
+                    </select>
 
-                    <div id="playerAnalysisResult" style="display: none;">
-                        <div class="stats-grid"
-                            style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px;">
-                            <div class="stat-box"
-                                style="background:#2C2C2C; padding:15px; border-radius:8px; text-align:center;">
-                                <div style="color:#aaa; font-size:0.9rem;">총 승리</div>
-                                <div id="pa-wins" style="font-size:1.5rem; font-weight:bold; color:#4CAF50;">0회</div>
+                    <div id="playerAnalysisResult" style="display: none; margin-top: 20px;">
+                        <div class="stats-grid">
+                            <div class="stat-box">
+                                <div class="stat-label">총 승리</div>
+                                <div id="pa-wins" class="stat-value green">0회</div>
                             </div>
-                            <div class="stat-box"
-                                style="background:#2C2C2C; padding:15px; border-radius:8px; text-align:center;">
-                                <div style="color:#aaa; font-size:0.9rem;">총 획득 (Pot)</div>
-                                <div id="pa-won" style="font-size:1.5rem; font-weight:bold; color:#FFC107;">0</div>
+                            <div class="stat-box">
+                                <div class="stat-label">총 획득</div>
+                                <div id="pa-won" class="stat-value gold">₩0</div>
                             </div>
-                            <div class="stat-box"
-                                style="background:#2C2C2C; padding:15px; border-radius:8px; text-align:center;">
-                                <div style="color:#aaa; font-size:0.9rem;">참여 게임</div>
-                                <div id="pa-games" style="font-size:1.5rem; font-weight:bold; color:white;">0</div>
-                            </div>
-                            <div class="stat-box"
-                                style="background:#2C2C2C; padding:15px; border-radius:8px; text-align:center;">
-                                <div id="pa-winrate-label" style="color:#aaa; font-size:0.9rem;">승률</div>
-                                <div id="pa-winrate" style="font-size:1.5rem; font-weight:bold; color:#2196F3;">0%</div>
+                            <div class="stat-box">
+                                <div class="stat-label">주력 핸드</div>
+                                <div id="pa-tophand" class="stat-value">-</div>
                             </div>
                         </div>
-                        <div style="background:#2C2C2C; padding:15px; border-radius:8px;">
-                            <h3>승리 스타일</h3>
-                            <p id="pa-style" style="color: #ccc;">데이터 분석 중...</p>
+
+                        <div class="insight-box" style="margin-top: 16px;">
+                            <h3>🤖 AI 인사이트</h3>
+                            <p id="pa-insight">분석 중...</p>
+                        </div>
+
+                        <div class="achievements-section" style="margin-top: 16px;">
+                            <h3>🏅 업적</h3>
+                            <div id="achievementsList" class="achievements-grid"></div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 탭 4: 족보 (신규) -->
+            <!-- 탭 4: 라이벌 비교 -->
+            <div id="tab-rivalry" class="tab-content">
+                <div class="card full-width">
+                    <h2>⚔️ 라이벌 비교</h2>
+                    <div class="rivalry-selects">
+                        <select id="rival1Select" class="rivalry-select">
+                            <option value="">플레이어 1</option>
+                        </select>
+                        <span class="vs-text">VS</span>
+                        <select id="rival2Select" class="rivalry-select">
+                            <option value="">플레이어 2</option>
+                        </select>
+                    </div>
+                    <button class="btn-primary full-width" onclick="compareRivals()"
+                        style="margin-top: 16px;">비교하기</button>
+
+                    <div id="rivalryResult" style="display: none; margin-top: 20px;">
+                        <div class="rivalry-comparison">
+                            <div class="rival-card">
+                                <div class="rival-name" id="r1-name">-</div>
+                                <div class="rival-stat"><span id="r1-wins">0</span>승</div>
+                                <div class="rival-stat gold">₩<span id="r1-won">0</span></div>
+                            </div>
+                            <div class="vs-divider">⚔️</div>
+                            <div class="rival-card">
+                                <div class="rival-name" id="r2-name">-</div>
+                                <div class="rival-stat"><span id="r2-wins">0</span>승</div>
+                                <div class="rival-stat gold">₩<span id="r2-won">0</span></div>
+                            </div>
+                        </div>
+                        <div class="insight-box" style="margin-top: 16px;">
+                            <h3>🤖 AI 분석</h3>
+                            <p id="rivalry-insight">-</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 탭 5: 족보 -->
             <div id="tab-rankings" class="tab-content">
                 <div class="card full-width" style="text-align: center; padding: 10px;">
                     <h2 style="text-align: left;">📜 포커 핸드 랭킹</h2>
-                    <img src="ranking.png" alt="Poker Hand Rankings"
-                        style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                    <img src="ranking.png" alt="Poker Hand Rankings" class="rankings-img">
                 </div>
             </div>
         </main>
 
-        <!-- FAB (모든 탭에서 보임) -->
+        <!-- FAB -->
         <button class="fab-btn" onclick="openGameModal()">
-            <span class="fab-icon">✎</span> RECORD
+            <span>✎</span> RECORD
         </button>
     </div>
 
@@ -155,7 +214,7 @@
             <form id="gameForm" onsubmit="handleGameSubmit(event)">
                 <div class="form-group">
                     <label for="winnerSelect">승자 선택</label>
-                    <select id="winnerSelect" required style="font-size:1.2rem; padding:12px;">
+                    <select id="winnerSelect" required class="large-select">
                         <option value="">플레이어 선택</option>
                     </select>
                 </div>
@@ -179,28 +238,25 @@
                         </select>
                     </div>
                     <div class="form-group half">
-                        <label for="potAmount">획득 금액 (Pot)</label>
+                        <label for="potAmount">획득 금액</label>
                         <input type="number" id="potAmount" required min="0" step="100" placeholder="0"
-                            style="font-size:1.2rem;">
+                            class="large-input">
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="gameNotes">메모 / AI 분석용 상황 설명</label>
-                    <input type="text" id="gameNotes" placeholder="예: 리버 역전, 블러핑 성공 등">
+                    <label for="gameNotes">메모 (AI 분석용)</label>
+                    <input type="text" id="gameNotes" placeholder="예: 리버 역전, 블러핑 성공">
                 </div>
 
-                <div class="modal-actions">
-                    <button type="submit" class="btn-primary full-width" style="padding:16px; font-size:1.1rem;">기록
-                        저장</button>
-                </div>
+                <button type="submit" class="btn-primary full-width large-btn">기록 저장</button>
             </form>
         </div>
     </div>
 
     <!-- 플레이어 추가 모달 -->
     <div id="addPlayerModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content small">
             <h3>새 플레이어 추가</h3>
             <div class="form-group">
                 <input type="text" id="newPlayerName" placeholder="이름 입력">
