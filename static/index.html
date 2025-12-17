@@ -13,22 +13,22 @@
 <body>
     <div class="app-container">
         <header class="main-header">
-            <h1>🎲 홀덤 트래커</h1>
+            <h1>Texas Hold'em Tracker</h1>
             <div class="header-actions">
                 <button class="btn-icon" onclick="toggleTheme()" id="themeToggle" title="테마 전환">
                     <span id="themeIcon">🌙</span>
                 </button>
-                <button class="btn-secondary small" onclick="openAddPlayerModal()">+ 플레이어</button>
+                <button class="btn-secondary small" onclick="openAddPlayerModal()">+ Player</button>
             </div>
         </header>
 
         <!-- 5탭 네비게이션 -->
         <nav class="tab-nav">
-            <button class="tab-btn active" onclick="switchTab('records')">📝 기록</button>
-            <button class="tab-btn" onclick="switchTab('stats')">📊 통계</button>
-            <button class="tab-btn" onclick="switchTab('players')">👤 분석</button>
-            <button class="tab-btn" onclick="switchTab('rivalry')">⚔️ 라이벌</button>
-            <button class="tab-btn" onclick="switchTab('rankings')">📜 족보</button>
+            <button class="tab-btn active" onclick="switchTab('records')">Games</button>
+            <button class="tab-btn" onclick="switchTab('stats')">Stats</button>
+            <button class="tab-btn" onclick="switchTab('players')">Players</button>
+            <button class="tab-btn" onclick="switchTab('rivalry')">Rivalry</button>
+            <button class="tab-btn" onclick="switchTab('rankings')">Hands</button>
         </nav>
 
         <main class="content-area">
@@ -200,7 +200,7 @@
 
         <!-- FAB -->
         <button class="fab-btn" onclick="openGameModal()">
-            <span>✎</span> RECORD
+            <span class="fab-icon">+</span> New Game
         </button>
     </div>
 
@@ -208,7 +208,7 @@
     <div id="gameModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>🏆 게임 결과 기록</h3>
+                <h3>Record Game</h3>
                 <button class="close-btn" onclick="closeGameModal()">×</button>
             </div>
             <form id="gameForm" onsubmit="handleGameSubmit(event)">

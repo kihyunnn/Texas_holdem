@@ -122,7 +122,7 @@ function renderGames(games) {
     const container = document.getElementById('recentGamesList');
 
     if (games.length === 0) {
-        container.innerHTML = '<div class="empty-state">📭 조건에 맞는 게임이 없습니다.</div>';
+        container.innerHTML = '<div class="empty-state">No games match your filter criteria.</div>';
         return;
     }
 
@@ -136,15 +136,15 @@ function renderGames(games) {
             <div class="game-header">
                 <span class="text-sec">${dateStr} ${timeStr}</span>
                 <div>
-                    <span class="game-pot">₩${g.pot_amount.toLocaleString()}</span>
-                    <button class="btn-icon small" onclick="deleteGame(${g.id})" title="삭제">🗑️</button>
+                    <span class="game-pot">${g.pot_amount.toLocaleString()}</span>
+                    <button class="btn-icon small" onclick="deleteGame(${g.id})" title="Delete">×</button>
                 </div>
             </div>
             <div class="game-main">
-                <span class="game-winner">🏆 ${g.winner_name}</span>
+                <span class="game-winner">${g.winner_name}</span>
                 ${g.winning_hand ? `<span class="game-hand">${g.winning_hand}</span>` : ''}
             </div>
-            ${g.ai_analysis ? `<div class="ai-comment">🤖 ${g.ai_analysis}</div>` : ''}
+            ${g.ai_analysis ? `<div class="ai-comment">${g.ai_analysis}</div>` : ''}
         </div>`;
     }).join('');
 }
