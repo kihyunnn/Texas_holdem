@@ -160,23 +160,36 @@ git push origin main --tags
 9. [x] fix: UI 버그 수정
 ```
 
-#### Phase 4: Docker 설정 (Day 2 - 1시간)
+#### Phase 3.5: AI & 고급 기능 (Day 2 - 2시간)
+```
+[feature/advanced-stats-ai] -> [Complete]
+1. [x] feat: 승리 핸드(족보) 입력 기능 추가
+2. [x] feat: OpenAI API 연동 (GPT-4o-mini)
+3. [x] feat: 게임별 AI 코멘터리 생성 및 저장
+```
+
+#### Phase 4: 시각화 및 UX 개선 (Day 2 - 2시간)
+```
+[feature/stats-visualization]
+1. [ ] feat: 게임 입력 간소화 (승자, 패, 팟만 기록)
+2. [ ] feat: 대시보드 '오늘의 세션'으로 변경 (자정 기준 초기화)
+3. [ ] feat: Chart.js 연동 및 수익 그래프/핸드 차트 구현
+4. [ ] feat: 전체 통계별도 페이지/모달 구현
+5. [ ] docs: AI 모델 정보 (GPT-4o-mini) 문서화
+```
+
+#### Phase 5: Docker 설정 (Day 3 - 1시간)
 ```
 [feature/docker-config]
 1. [ ] chore: Dockerfile 작성
 2. [ ] chore: docker-compose.yml 작성
-3. [ ] chore: .dockerignore 추가
-4. [ ] test: Docker 빌드 테스트
-5. [ ] docs: Docker 배포 가이드 추가
 ```
 
-#### Phase 5: 문서화 및 마무리 (Day 2 - 1시간)
+#### Phase 6: 문서화 및 마무리 (Day 3 - 1시간)
 ```
 [feature/documentation]
-1. [ ] docs: API 문서 작성 (이미 초안은 있음)
-2. [ ] docs: 사용자 가이드 작성
-3. [ ] docs: 배포 가이드 보완
-4. [ ] chore: 코드 정리 및 주석 추가
+1. [ ] docs: API 문서 및 사용자 가이드 업데이트
+2. [ ] docs: 배포 가이드 보완
 ```
 
 ### 2.5 .gitignore 설정

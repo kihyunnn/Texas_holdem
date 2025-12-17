@@ -1,4 +1,6 @@
 const API_URL = '/api';
+let trendChart = null;
+let handChart = null;
 
 // --- 초기화 ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -6,8 +8,10 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function loadDashboard() {
-    await loadPlayers(); // 승자 선택 옵션 및 모달 내 목록 준비
-    await loadStats();   // 통계 및 기록 로드
+    await loadPlayers();
+    await loadSessionStats(); // 오늘 세션 통계 (리더보드)
+    await loadRecentGames();  // 오늘 게임 기록
+    await loadCharts();       // 차트 렌더링
 }
 
 // --- Player Management ---
@@ -17,34 +21,15 @@ async function loadPlayers() {
     try {
         const res = await fetch(`${API_URL}/players`);
         players = await res.json();
-
-        renderPlayerSelectionList();
         renderWinnerOptions();
     } catch (e) {
         console.error("Failed to load players", e);
     }
 }
 
-function renderPlayerSelectionList() {
-    const container = document.getElementById('playerSelectionList');
-
-    if (players.length === 0) {
-        container.innerHTML = '<div class="text-sec" style="padding:10px; text-align:center;">플레이어가 없습니다. 추가해주세요.</div>';
-        return;
-    }
-
-    container.innerHTML = players.map(p => `
-        <div class="player-select-item" id="player-item-${p.id}">
-            <input type="checkbox" class="player-checkbox" id="p-check-${p.id}" value="${p.id}" onchange="togglePlayerBetInput(${p.id})">
-            <span class="player-name">${p.name}</span>
-            <input type="number" class="player-bet-input" id="p-bet-${p.id}" placeholder="베팅액" min="0" disabled>
-        </div>
-    `).join('');
-}
-
 function renderWinnerOptions() {
     const select = document.getElementById('winnerSelect');
-    select.innerHTML = '<option value="">선택하세요</option>';
+    select.innerHTML = '<option value="">누가 이겼나요?</option>';
     players.forEach(p => {
         const option = document.createElement('option');
         option.value = p.id;
@@ -53,25 +38,8 @@ function renderWinnerOptions() {
     });
 }
 
-function togglePlayerBetInput(id) {
-    const checkbox = document.getElementById(`p-check-${id}`);
-    const input = document.getElementById(`p-bet-${id}`);
-    const item = document.getElementById(`player-item-${id}`);
-
-    input.disabled = !checkbox.checked;
-
-    if (checkbox.checked) {
-        item.classList.add('checked');
-        input.focus();
-    } else {
-        item.classList.remove('checked');
-        input.value = '';
-    }
-}
-
 // --- Modals ---
 function openRankings() {
-    // 족보는 새 창 팝업으로
     window.open('rankings.html', 'PokerRankings', 'width=600,height=800,scrollbars=yes');
 }
 
@@ -82,8 +50,6 @@ function openGameModal() {
 function closeGameModal() {
     document.getElementById('gameModal').style.display = 'none';
     document.getElementById('gameForm').reset();
-    document.querySelectorAll('.player-select-item').forEach(el => el.classList.remove('checked'));
-    document.querySelectorAll('.player-bet-input').forEach(el => el.disabled = true);
 }
 
 function openAddPlayerModal() {
@@ -110,15 +76,10 @@ async function submitNewPlayer() {
             body: JSON.stringify({ name })
         });
 
-        if (!res.ok) {
-            const err = await res.json();
-            throw new Error(err.error || '오류가 발생했습니다');
-        }
+        if (!res.ok) throw new Error('오류 발생');
 
         closeAddPlayerModal();
         await loadPlayers();
-        // 리더보드도 갱신하여 새 플레이어가 보이게 함
-        await loadStats();
     } catch (e) {
         alert(e.message);
     }
@@ -132,34 +93,19 @@ async function handleGameSubmit(e) {
     const notes = document.getElementById('gameNotes').value;
     const winningHand = document.getElementById('winningHand').value;
 
-    const participants = [];
-    const checkboxes = document.querySelectorAll('.player-checkbox:checked');
-
-    checkboxes.forEach(cb => {
-        const playerId = cb.value;
-        const betAmount = document.getElementById(`p-bet-${playerId}`).value;
-        participants.push({
-            player_id: parseInt(playerId),
-            bet_amount: parseInt(betAmount || 0)
-        });
-    });
-
-    if (participants.length < 2) return alert("최소 2명 이상 참여해야 합니다.");
-    if (!participants.find(p => p.player_id == winnerId)) return alert("승자는 참여자 목록에 있어야 합니다.");
+    // 간소화됨: 참가자 목록 없이, 승자와 팟만 전송
+    const payload = {
+        winner_id: parseInt(winnerId),
+        pot_amount: parseInt(potAmount),
+        winning_hand: winningHand,
+        notes
+    };
 
     // 로딩 표시
     const submitBtn = e.target.querySelector('button[type="submit"]');
     const originalText = submitBtn.textContent;
     submitBtn.textContent = 'AI 분석 중...';
     submitBtn.disabled = true;
-
-    const payload = {
-        winner_id: parseInt(winnerId),
-        pot_amount: parseInt(potAmount),
-        winning_hand: winningHand,
-        participants,
-        notes
-    };
 
     try {
         const res = await fetch(`${API_URL}/games`, {
@@ -170,7 +116,6 @@ async function handleGameSubmit(e) {
 
         if (!res.ok) throw new Error("게임 기록 실패");
 
-        // 성공 처리
         const data = await res.json();
 
         if (data.ai_analysis) {
@@ -180,7 +125,7 @@ async function handleGameSubmit(e) {
         }
 
         closeGameModal();
-        await loadStats(); // 대시보드 갱신
+        await loadDashboard(); // 전체 갱신
 
     } catch (err) {
         alert(err.message);
@@ -190,33 +135,30 @@ async function handleGameSubmit(e) {
     }
 }
 
-// --- Stats & Dashboard ---
-async function loadStats() {
-    await Promise.all([loadLeaderboard(), loadRecentGames()]);
-}
-
-async function loadLeaderboard() {
+// --- Stats & Charts ---
+async function loadSessionStats() {
     try {
-        const res = await fetch(`${API_URL}/leaderboard`);
+        // 오늘자 세션 통계 가져오기
+        const res = await fetch(`${API_URL}/stats/session`);
         const data = await res.json();
 
-        const tbody = document.getElementById('leaderboardBody');
+        const tbody = document.getElementById('sessionStatsBody');
 
         if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;" class="text-sec">플레이어가 없습니다.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">오늘 기록된 게임이 없습니다.</td></tr>';
+            document.getElementById('topWinnerDiff').textContent = '-';
             return;
         }
+
+        // Top Winner 표시
+        document.getElementById('topWinnerDiff').textContent = `${data[0].name} (₩${data[0].total_won.toLocaleString()})`;
 
         tbody.innerHTML = data.map((p, idx) => `
             <tr>
                 <td>${idx + 1}</td>
                 <td><strong>${p.name}</strong></td>
-                <td>${p.total_games}</td>
-                <td>${p.total_wins}</td>
-                <td class="${p.profit >= 0 ? 'profit-positive' : 'profit-negative'}">
-                    ${p.profit.toLocaleString()}
-                </td>
-                <td>${p.win_rate}%</td>
+                <td>${p.wins}승</td>
+                <td class="profit-positive">+ ₩${p.total_won.toLocaleString()}</td>
             </tr>
         `).join('');
     } catch (e) {
@@ -224,38 +166,114 @@ async function loadLeaderboard() {
     }
 }
 
+async function loadCharts() {
+    // 1. Trend Chart (오늘의 Pot 획득 추이 - 예시로 누적은 아니지만 게임별 pot 보여주기)
+    try {
+        const res = await fetch(`${API_URL}/stats/trend`);
+        const games = await res.json();
+
+        const ctxTrend = document.getElementById('trendChart').getContext('2d');
+
+        const labels = games.map((g, i) => `#${i + 1} (${g.winner_name})`);
+        const dataPoints = games.map(g => g.pot_amount);
+
+        if (trendChart) trendChart.destroy();
+
+        trendChart = new Chart(ctxTrend, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Game Pot Size',
+                    data: dataPoints,
+                    borderColor: '#4CAF50',
+                    backgroundColor: 'rgba(76, 175, 80, 0.2)',
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#333' } },
+                    x: { display: false } // 너무 많으면 라벨 숨김
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+
+    } catch (e) { console.error(e); }
+
+    // 2. Hand Chart
+    try {
+        const res = await fetch(`${API_URL}/stats/hand?scope=today`);
+        const stats = await res.json();
+
+        const ctxHand = document.getElementById('handChart').getContext('2d');
+
+        // 데이터가 없으면 차트 숨기기
+        if (stats.length === 0) return;
+
+        const labels = stats.map(s => s.winning_hand);
+        const data = stats.map(s => s.count);
+
+        if (handChart) handChart.destroy();
+
+        handChart = new Chart(ctxHand, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: [
+                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'right', labels: { color: '#aaa', boxWidth: 10 } }
+                }
+            }
+        });
+    } catch (e) { console.error(e); }
+}
+
+
 async function loadRecentGames() {
     try {
-        const res = await fetch(`${API_URL}/games?limit=10`);
+        const res = await fetch(`${API_URL}/games?limit=10&scope=today`);
         const games = await res.json();
 
         const container = document.getElementById('recentGamesList');
 
         if (games.length === 0) {
-            container.innerHTML = '<div class="text-sec" style="text-align:center; padding: 20px;">아직 게임 기록이 없습니다.</div>';
+            container.innerHTML = '<div class="text-sec" style="text-align:center; padding: 20px;">오늘 게임 기록이 없습니다.</div>';
             return;
         }
 
         container.innerHTML = games.map(g => {
-            const date = new Date(g.played_at).toLocaleString('ko-KR', {
-                month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit'
-            });
+            const time = new Date(g.played_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
 
             return `
             <div class="game-history-item">
                 <div class="game-header">
-                    <span class="text-sec small-date">${date}</span>
-                    <span class="game-pot">Pot: ${g.pot_amount.toLocaleString()}</span>
+                    <span class="text-sec small-date">${time}</span>
+                    <span class="game-pot">₩ ${g.pot_amount.toLocaleString()}</span>
                 </div>
                 <div class="d-flex justify-between">
                     <span>
-                        Winner: <span class="game-winner">${g.winner_name}</span>
-                        ${g.winning_hand ? `<span class="text-sec" style="font-size:0.8rem; margin-left:4px;">(${g.winning_hand})</span>` : ''}
+                        🏆 <span class="game-winner" style="font-size:1.1rem;">${g.winner_name}</span>
+                        ${g.winning_hand ? `<span class="text-sec" style="font-size:0.9rem;"> - ${g.winning_hand}</span>` : ''}
                     </span>
-                    <span class="text-sec">${g.participants.length}명</span>
                 </div>
-                ${g.ai_analysis ? `<div style="background:#2a2a2a; padding:8px; border-radius:4px; margin-top:8px; font-size:0.85rem; color:#ddd;">🤖 ${g.ai_analysis}</div>` : ''}
-                ${g.notes ? `<div class="text-sec" style="margin-top:4px; font-size:0.85rem;">📝 ${g.notes}</div>` : ''}
+                ${g.ai_analysis ? `<div style="background:#2a2a2a; padding:10px; border-radius:8px; margin-top:8px; font-size:0.9rem; color:#e0e0e0; line-height:1.4;">🤖 ${g.ai_analysis}</div>` : ''}
             </div>
             `;
         }).join('');

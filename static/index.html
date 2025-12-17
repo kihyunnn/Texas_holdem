@@ -7,92 +7,99 @@
     <title>텍사스 홀덤 트래커</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
     <div class="app-container">
         <header class="main-header">
-            <h1>🎲 홀덤 트래커</h1>
+            <h1>🎲 오늘의 세션</h1>
             <div class="header-actions">
-                <button class="btn-text" onclick="openRankings()">📜 족보 보기</button>
+                <button class="btn-text" onclick="openRankings()">📜 족보</button>
             </div>
         </header>
 
         <main class="content-area">
-            <!-- 대시보드 (기본 화면) -->
-            <div class="dashboard-grid">
-                <!-- 상단: 주요 액션 & 리더보드 -->
-                <div class="card full-width leaderboard-section">
-                    <div class="section-header">
-                        <h2>🏆 실시간 순위</h2>
-                        <button class="btn-secondary small" onclick="openAddPlayerModal()">+ 플레이어 추가</button>
+            <!-- 1. 차트 섹션 (신규) -->
+            <div class="chart-container card full-width" style="margin-bottom: 20px;">
+                <h2>📊 오늘의 현황</h2>
+                <div style="height: 250px;">
+                    <canvas id="trendChart"></canvas>
+                </div>
+                <div class="chart-stats-row">
+                    <!-- 핸드 비율 파이 차트 -->
+                    <div style="width: 48%; height: 200px; display:inline-block;">
+                        <h3>승리 핸드 비율</h3>
+                        <canvas id="handChart"></canvas>
                     </div>
-                    <div class="table-container">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>순위</th>
-                                    <th>이름</th>
-                                    <th>게임</th>
-                                    <th>승리</th>
-                                    <th>순수익</th>
-                                    <th>승률</th>
-                                </tr>
-                            </thead>
-                            <tbody id="leaderboardBody">
-                                <!-- JS로 데이터 로드됨 -->
-                            </tbody>
-                        </table>
+                    <!-- 간단 텍스트 요약 -->
+                    <div style="width: 48%; display:inline-block; vertical-align:top; padding:10px;">
+                        <h3>Today's Top Winner</h3>
+                        <div id="topWinnerDiff" style="font-size: 1.2rem; color: #4CAF50; font-weight: bold;">-</div>
                     </div>
                 </div>
+            </div>
 
-                <!-- 하단: 최근 게임 기록 -->
-                <div class="card full-width history-section">
+            <!-- 2. 리더보드 (오늘 기준) -->
+            <div class="card full-width leaderboard-section">
+                <div class="section-header">
+                    <h2>🏆 오늘의 순위 (Pot 획득)</h2>
+                    <button class="btn-secondary small" onclick="openAddPlayerModal()">+ 플레이어</button>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>순위</th>
+                                <th>이름</th>
+                                <th>승리 횟수</th>
+                                <th>획득 금액 (Pot)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sessionStatsBody">
+                            <!-- JS Load -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 3. 최근 게임 기록 -->
+            <div class="card full-width history-section" style="margin-top: 16px;">
+                <div class="section-header">
                     <h2>최근 게임 기록</h2>
-                    <div id="recentGamesList" class="game-history-list">
-                        <!-- JS로 데이터 로드됨 -->
-                    </div>
+                    <!-- 전체 보기 기능을 추후 넣을 수 있음 -->
+                </div>
+                <div id="recentGamesList" class="game-history-list">
+                    <!-- JS Load -->
                 </div>
             </div>
         </main>
 
-        <!-- 하단 플로팅 액션 버튼 (게임 기록) -->
+        <!-- FAB -->
         <button class="fab-btn" onclick="openGameModal()">
-            <span class="fab-icon">✎</span> GAME RECORD
+            <span class="fab-icon">✎</span> RECORD
         </button>
     </div>
 
-    <!-- 게임 기록 모달 -->
+    <!-- 게임 기록 모달 (간소화됨) -->
     <div id="gameModal" class="modal">
-        <div class="modal-content large-modal">
+        <div class="modal-content">
             <div class="modal-header">
-                <h3>새 게임 기록</h3>
+                <h3>🏆 게임 결과 기록</h3>
                 <button class="close-btn" onclick="closeGameModal()">×</button>
             </div>
             <form id="gameForm" onsubmit="handleGameSubmit(event)">
+
                 <div class="form-group">
-                    <label>참여 플레이어 & 베팅</label>
-                    <div id="playerSelectionList" class="player-list scrollable-list">
-                        <div class="loading">플레이어 목록을 불러오는 중...</div>
-                    </div>
+                    <label for="winnerSelect">승자 (Winner)</label>
+                    <select id="winnerSelect" required style="font-size:1.2rem; padding:12px;">
+                        <option value="">누가 이겼나요?</option>
+                    </select>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group half">
-                        <label for="potAmount">총 팟 (Pot)</label>
-                        <input type="number" id="potAmount" required min="0" step="100" placeholder="0">
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group half">
-                        <label for="winnerSelect">승자 (Winner)</label>
-                        <select id="winnerSelect" required>
-                            <option value="">선택하세요</option>
-                        </select>
-                    </div>
-                    <div class="form-group half">
-                        <label for="winningHand">승리 핸드 (족보)</label>
+                        <label for="winningHand">승리 핸드</label>
                         <select id="winningHand">
                             <option value="">(선택 안함)</option>
                             <option value="Royal Flush">로열 플러시</option>
@@ -105,19 +112,24 @@
                             <option value="Two Pair">투 페어</option>
                             <option value="One Pair">원 페어</option>
                             <option value="High Card">하이 카드</option>
-                            <option value="Fold Win">폴드 승 (기권승)</option>
+                            <option value="Fold Win">폴드 승</option>
                         </select>
+                    </div>
+                    <div class="form-group half">
+                        <label for="potAmount">획득 금액 (Pot)</label>
+                        <input type="number" id="potAmount" required min="0" step="100" placeholder="0"
+                            style="font-size:1.2rem;">
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="gameNotes">메모</label>
-                    <input type="text" id="gameNotes" placeholder="특이사항 (선택)">
+                    <label for="gameNotes">메모 / AI 분석용 상황 설명</label>
+                    <input type="text" id="gameNotes" placeholder="예: 리버 역전, 블러핑 성공 등">
                 </div>
 
                 <div class="modal-actions">
-                    <button type="button" class="btn-text" onclick="closeGameModal()">취소</button>
-                    <button type="submit" class="btn-primary">기록 저장</button>
+                    <button type="submit" class="btn-primary full-width" style="padding:16px; font-size:1.1rem;">기록
+                        저장</button>
                 </div>
             </form>
         </div>
@@ -128,7 +140,7 @@
         <div class="modal-content">
             <h3>새 플레이어 추가</h3>
             <div class="form-group">
-                <input type="text" id="newPlayerName" placeholder="이름 입력 (예: 홍길동)">
+                <input type="text" id="newPlayerName" placeholder="이름 입력">
             </div>
             <div class="modal-actions">
                 <button class="btn-text" onclick="closeAddPlayerModal()">취소</button>
