@@ -93,10 +93,6 @@ function renderWinnerOptions() {
 }
 
 // --- Modals ---
-function openRankings() {
-    window.open('rankings.html', 'PokerRankings', 'width=600,height=800,scrollbars=yes');
-}
-
 function openGameModal() {
     document.getElementById('gameModal').style.display = 'flex';
 }
