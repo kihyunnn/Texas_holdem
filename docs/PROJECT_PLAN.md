@@ -119,64 +119,64 @@ git push origin main --tags
 #### Phase 1: 프로젝트 설정 (Day 1 - 1시간)
 ```
 [feature/setup-project]
-1. chore: 프로젝트 디렉토리 구조 생성
-2. docs: PRD 문서 작성
-3. docs: 프로젝트 계획서 작성
-4. docs: 개발 문서 작성
-5. chore: requirements.txt 추가
-6. chore: .gitignore 추가
-7. docs: README.md 작성
+1. [x] chore: 프로젝트 디렉토리 구조 생성
+2. [x] docs: PRD 문서 작성
+3. [x] docs: 프로젝트 계획서 작성
+4. [x] docs: 개발 문서 작성
+5. [x] chore: requirements.txt 추가
+6. [x] chore: .gitignore 추가
+7. [x] docs: README.md 작성
 ```
 
 #### Phase 2: 백엔드 개발 (Day 1 - 3시간)
 ```
 [feature/backend-api]
-1. feat: Flask 앱 초기 설정
-2. feat: SQLite 데이터베이스 스키마 정의
-3. feat: 플레이어 CRUD API 구현
+1. [x] feat: Flask 앱 초기 설정
+2. [x] feat: SQLite 데이터베이스 스키마 정의
+3. [x] feat: 플레이어 CRUD API 구현
    - GET /api/players
    - POST /api/players
    - GET /api/players/<id>/stats
-4. feat: 게임 기록 API 구현
+4. [x] feat: 게임 기록 API 구현
    - POST /api/games
    - GET /api/games
-5. feat: 통계 API 구현
+5. [x] feat: 통계 API 구현
    - GET /api/leaderboard
-6. test: API 엔드포인트 테스트
-7. fix: 버그 수정 (발견 시)
+6. [x] test: API 엔드포인트 테스트
+7. [x] fix: 버그 수정 (발견 시)
 ```
 
 #### Phase 3: 프론트엔드 개발 (Day 1-2 - 4시간)
 ```
 [feature/frontend-ui]
-1. feat: HTML 기본 구조 생성
-2. style: CSS 스타일 시스템 구축
-3. feat: 플레이어 관리 UI 구현
-4. feat: 게임 기록 폼 UI 구현
-5. feat: 통계/리더보드 UI 구현
-6. feat: 족보 테이블 UI 구현
-7. feat: JavaScript API 연동
-8. style: 반응형 디자인 적용
-9. fix: UI 버그 수정
+1. [x] feat: HTML 기본 구조 생성
+2. [x] style: CSS 스타일 시스템 구축
+3. [x] feat: 플레이어 관리 UI 구현
+4. [x] feat: 게임 기록 폼 UI 구현
+5. [x] feat: 통계/리더보드 UI 구현
+6. [x] feat: 족보 테이블 UI 구현
+7. [x] feat: JavaScript API 연동
+8. [x] style: 반응형 디자인 적용
+9. [x] fix: UI 버그 수정
 ```
 
 #### Phase 4: Docker 설정 (Day 2 - 1시간)
 ```
 [feature/docker-config]
-1. chore: Dockerfile 작성
-2. chore: docker-compose.yml 작성
-3. chore: .dockerignore 추가
-4. test: Docker 빌드 테스트
-5. docs: Docker 배포 가이드 추가
+1. [ ] chore: Dockerfile 작성
+2. [ ] chore: docker-compose.yml 작성
+3. [ ] chore: .dockerignore 추가
+4. [ ] test: Docker 빌드 테스트
+5. [ ] docs: Docker 배포 가이드 추가
 ```
 
 #### Phase 5: 문서화 및 마무리 (Day 2 - 1시간)
 ```
 [feature/documentation]
-1. docs: API 문서 작성
-2. docs: 사용자 가이드 작성
-3. docs: 배포 가이드 보완
-4. chore: 코드 정리 및 주석 추가
+1. [ ] docs: API 문서 작성 (이미 초안은 있음)
+2. [ ] docs: 사용자 가이드 작성
+3. [ ] docs: 배포 가이드 보완
+4. [ ] chore: 코드 정리 및 주석 추가
 ```
 
 ### 2.5 .gitignore 설정

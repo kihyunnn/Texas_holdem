@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>텍사스 홀덤 트래커</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <header class="main-header">
+            <h1>🎲 홀덤 트래커</h1>
+            <div class="header-actions">
+                <button class="btn-text" onclick="openRankings()">📜 족보 보기</button>
+            </div>
+        </header>
+
+        <main class="content-area">
+            <!-- 대시보드 (기본 화면) -->
+            <div class="dashboard-grid">
+                <!-- 상단: 주요 액션 & 리더보드 -->
+                <div class="card full-width leaderboard-section">
+                    <div class="section-header">
+                        <h2>🏆 실시간 순위</h2>
+                        <button class="btn-secondary small" onclick="openAddPlayerModal()">+ 플레이어 추가</button>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>순위</th>
+                                    <th>이름</th>
+                                    <th>게임</th>
+                                    <th>승리</th>
+                                    <th>순수익</th>
+                                    <th>승률</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leaderboardBody">
+                                <!-- JS로 데이터 로드됨 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 하단: 최근 게임 기록 -->
+                <div class="card full-width history-section">
+                    <h2>최근 게임 기록</h2>
+                    <div id="recentGamesList" class="game-history-list">
+                        <!-- JS로 데이터 로드됨 -->
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 하단 플로팅 액션 버튼 (게임 기록) -->
+        <button class="fab-btn" onclick="openGameModal()">
+            <span class="fab-icon">✎</span> GAME RECORD
+        </button>
+    </div>
+
+    <!-- 게임 기록 모달 -->
+    <div id="gameModal" class="modal">
+        <div class="modal-content large-modal">
+            <div class="modal-header">
+                <h3>새 게임 기록</h3>
+                <button class="close-btn" onclick="closeGameModal()">×</button>
+            </div>
+            <form id="gameForm" onsubmit="handleGameSubmit(event)">
+                <div class="form-group">
+                    <label>참여 플레이어 & 베팅</label>
+                    <div id="playerSelectionList" class="player-list scrollable-list">
+                        <div class="loading">플레이어 목록을 불러오는 중...</div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label for="potAmount">총 팟 (Pot)</label>
+                        <input type="number" id="potAmount" required min="0" step="100" placeholder="0">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label for="winnerSelect">승자 (Winner)</label>
+                        <select id="winnerSelect" required>
+                            <option value="">선택하세요</option>
+                        </select>
+                    </div>
+                    <div class="form-group half">
+                        <label for="winningHand">승리 핸드 (족보)</label>
+                        <select id="winningHand">
+                            <option value="">(선택 안함)</option>
+                            <option value="Royal Flush">로열 플러시</option>
+                            <option value="Straight Flush">스트레이트 플러시</option>
+                            <option value="Four of a Kind">포 카드</option>
+                            <option value="Full House">풀 하우스</option>
+                            <option value="Flush">플러시</option>
+                            <option value="Straight">스트레이트</option>
+                            <option value="Three of a Kind">트리플</option>
+                            <option value="Two Pair">투 페어</option>
+                            <option value="One Pair">원 페어</option>
+                            <option value="High Card">하이 카드</option>
+                            <option value="Fold Win">폴드 승 (기권승)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="gameNotes">메모</label>
+                    <input type="text" id="gameNotes" placeholder="특이사항 (선택)">
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-text" onclick="closeGameModal()">취소</button>
+                    <button type="submit" class="btn-primary">기록 저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 플레이어 추가 모달 -->
+    <div id="addPlayerModal" class="modal">
+        <div class="modal-content">
+            <h3>새 플레이어 추가</h3>
+            <div class="form-group">
+                <input type="text" id="newPlayerName" placeholder="이름 입력 (예: 홍길동)">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-text" onclick="closeAddPlayerModal()">취소</button>
+                <button class="btn-primary" onclick="submitNewPlayer()">추가</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
