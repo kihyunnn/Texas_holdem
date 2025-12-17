@@ -2,9 +2,40 @@ const API_URL = '/api';
 let trendChart = null;
 let handChart = null;
 
+// --- 테마 관리 ---
+function initTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    updateThemeIcon(savedTheme);
+}
+
+function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+    const newTheme = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeIcon(newTheme);
+
+    // 차트가 떠있으면 다시 그리기 (색상 업데이트)
+    if (trendChart || handChart) {
+        const currentTab = localStorage.getItem('lastTab') || 'records';
+        if (currentTab === 'stats') {
+            loadCharts();
+        }
+    }
+}
+
+function updateThemeIcon(theme) {
+    const icon = document.getElementById('themeIcon');
+    if (icon) {
+        icon.textContent = theme === 'dark' ? '🌙' : '☀️';
+    }
+}
+
 // --- 초기화 ---
 document.addEventListener('DOMContentLoaded', () => {
-    const lastTab = localStorage.getItem('lastTab') || 'records'; // 기본 탭: 기록
+    initTheme(); // 테마 먼저 로드
+    const lastTab = localStorage.getItem('lastTab') || 'records';
     switchTab(lastTab);
 });
 
