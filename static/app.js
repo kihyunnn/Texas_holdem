@@ -130,6 +130,7 @@ async function handleGameSubmit(e) {
     const winnerId = document.getElementById('winnerSelect').value;
     const potAmount = document.getElementById('potAmount').value;
     const notes = document.getElementById('gameNotes').value;
+    const winningHand = document.getElementById('winningHand').value;
 
     const participants = [];
     const checkboxes = document.querySelectorAll('.player-checkbox:checked');
@@ -146,9 +147,16 @@ async function handleGameSubmit(e) {
     if (participants.length < 2) return alert("최소 2명 이상 참여해야 합니다.");
     if (!participants.find(p => p.player_id == winnerId)) return alert("승자는 참여자 목록에 있어야 합니다.");
 
+    // 로딩 표시
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = 'AI 분석 중...';
+    submitBtn.disabled = true;
+
     const payload = {
         winner_id: parseInt(winnerId),
         pot_amount: parseInt(potAmount),
+        winning_hand: winningHand,
         participants,
         notes
     };
@@ -163,11 +171,22 @@ async function handleGameSubmit(e) {
         if (!res.ok) throw new Error("게임 기록 실패");
 
         // 성공 처리
+        const data = await res.json();
+
+        if (data.ai_analysis) {
+            alert(`[AI 분석 결과]\n${data.ai_analysis}`);
+        } else {
+            alert("게임이 기록되었습니다!");
+        }
+
         closeGameModal();
         await loadStats(); // 대시보드 갱신
 
     } catch (err) {
         alert(err.message);
+    } finally {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
     }
 }
 
@@ -229,9 +248,13 @@ async function loadRecentGames() {
                     <span class="game-pot">Pot: ${g.pot_amount.toLocaleString()}</span>
                 </div>
                 <div class="d-flex justify-between">
-                    <span>Winner: <span class="game-winner">${g.winner_name}</span></span>
+                    <span>
+                        Winner: <span class="game-winner">${g.winner_name}</span>
+                        ${g.winning_hand ? `<span class="text-sec" style="font-size:0.8rem; margin-left:4px;">(${g.winning_hand})</span>` : ''}
+                    </span>
                     <span class="text-sec">${g.participants.length}명</span>
                 </div>
+                ${g.ai_analysis ? `<div style="background:#2a2a2a; padding:8px; border-radius:4px; margin-top:8px; font-size:0.85rem; color:#ddd;">🤖 ${g.ai_analysis}</div>` : ''}
                 ${g.notes ? `<div class="text-sec" style="margin-top:4px; font-size:0.85rem;">📝 ${g.notes}</div>` : ''}
             </div>
             `;

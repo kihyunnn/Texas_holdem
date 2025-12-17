@@ -82,10 +82,30 @@
                         <label for="potAmount">총 팟 (Pot)</label>
                         <input type="number" id="potAmount" required min="0" step="100" placeholder="0">
                     </div>
+                </div>
+
+                <div class="form-row">
                     <div class="form-group half">
                         <label for="winnerSelect">승자 (Winner)</label>
                         <select id="winnerSelect" required>
                             <option value="">선택하세요</option>
+                        </select>
+                    </div>
+                    <div class="form-group half">
+                        <label for="winningHand">승리 핸드 (족보)</label>
+                        <select id="winningHand">
+                            <option value="">(선택 안함)</option>
+                            <option value="Royal Flush">로열 플러시</option>
+                            <option value="Straight Flush">스트레이트 플러시</option>
+                            <option value="Four of a Kind">포 카드</option>
+                            <option value="Full House">풀 하우스</option>
+                            <option value="Flush">플러시</option>
+                            <option value="Straight">스트레이트</option>
+                            <option value="Three of a Kind">트리플</option>
+                            <option value="Two Pair">투 페어</option>
+                            <option value="One Pair">원 페어</option>
+                            <option value="High Card">하이 카드</option>
+                            <option value="Fold Win">폴드 승 (기권승)</option>
                         </select>
                     </div>
                 </div>
