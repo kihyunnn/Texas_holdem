@@ -16,7 +16,7 @@
                 │ SQL
                 ▼
 ┌─────────────────────────────────┐
-│     SQLite (poker.db)           │
+│     SQLite (data/poker.db)      │
 └─────────────────────────────────┘
 ```
 
@@ -122,4 +122,4 @@ curl -X POST http://localhost:5000/api/games \
 |------|------|
 | Flask 시작 안됨 | `pip install -r requirements.txt` 재실행 |
 | CORS 에러 | Flask-CORS 설치 확인 |
-| DB 초기화 실패 | `poker.db` 삭제 후 재시작 |
+| DB 초기화 실패 | `data/poker.db` 삭제 후 재시작 |

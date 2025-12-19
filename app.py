@@ -10,7 +10,9 @@ load_dotenv()
 app = Flask(__name__, static_folder='static', static_url_path='')
 CORS(app)
 
-DATABASE = 'poker.db'
+DATABASE = os.environ.get('DATABASE_PATH', 'data/poker.db')
+if not os.path.exists(os.path.dirname(DATABASE)):
+    os.makedirs(os.path.dirname(DATABASE))
 
 def get_openai_client():
     api_key = os.getenv('OPENAI_API_KEY')
@@ -81,6 +83,9 @@ def init_db():
         
         db.commit()
 
+# 초기화 실행
+init_db()
+
 # ==================== Static Files ====================
 @app.route('/')
 def index():
@@ -140,11 +145,11 @@ def get_player_stats(player_id):
 
 # ==================== AI Analysis ====================
 def analyze_game(game_data, winner_name):
-    client = get_openai_client()
-    if not client:
-        return None
-
     try:
+        client = get_openai_client()
+        if not client:
+            return None
+
         prompt = f"""텍사스 홀덤 게임 분석:
 승자: {winner_name}
 핸드: {game_data.get('winning_hand', '알 수 없음')}
@@ -163,15 +168,16 @@ def analyze_game(game_data, winner_name):
         )
         return response.choices[0].message.content
     except Exception as e:
-        return f"분석 오류: {str(e)}"
+        print(f"AI Analysis Error: {str(e)}")
+        return f"분석을 불러올 수 없습니다. ({str(e)})"
 
 def generate_player_insight(player_name, stats):
     """플레이어 스타일 AI 분석"""
-    client = get_openai_client()
-    if not client:
-        return "AI 분석을 위해 API 키가 필요합니다."
-
     try:
+        client = get_openai_client()
+        if not client:
+            return "AI 분석을 위해 API 키가 필요합니다."
+
         prompt = f"""포커 플레이어 분석:
 이름: {player_name}
 총 승리: {stats['total_wins']}회
@@ -189,16 +195,17 @@ def generate_player_insight(player_name, stats):
             max_tokens=150
         )
         return response.choices[0].message.content
-    except:
-        return "분석을 생성할 수 없습니다."
+    except Exception as e:
+        print(f"AI Insight Error: {str(e)}")
+        return f"분석을 생성할 수 없습니다. ({str(e)})"
 
 def generate_rivalry_analysis(player1, player2, stats1, stats2):
     """라이벌 비교 AI 분석"""
-    client = get_openai_client()
-    if not client:
-        return "AI 분석을 위해 API 키가 필요합니다."
-
     try:
+        client = get_openai_client()
+        if not client:
+            return "AI 분석을 위해 API 키가 필요합니다."
+
         prompt = f"""포커 라이벌 비교:
 {player1}: {stats1['total_wins']}승, {stats1['total_won']}원 획득
 {player2}: {stats2['total_wins']}승, {stats2['total_won']}원 획득
@@ -214,8 +221,9 @@ def generate_rivalry_analysis(player1, player2, stats1, stats2):
             max_tokens=100
         )
         return response.choices[0].message.content
-    except:
-        return "분석을 생성할 수 없습니다."
+    except Exception as e:
+        print(f"AI Rivalry Error: {str(e)}")
+        return f"분석을 생성할 수 없습니다. ({str(e)})"
 
 # ==================== Games API ====================
 @app.route('/api/games', methods=['POST'])
@@ -232,7 +240,8 @@ def record_game():
     try:
         db = get_db()
         winner_name = db.execute('SELECT name FROM players WHERE id=?', (winner_id,)).fetchone()[0]
-        ai_analysis = analyze_game(data, winner_name)
+        # ai_analysis = analyze_game(data, winner_name)
+        ai_analysis = None
 
         cursor = db.execute('''
             INSERT INTO games (winner_id, pot_amount, winning_hand, ai_analysis, notes) 
@@ -486,5 +495,4 @@ def get_achievements(player_id):
     })
 
 if __name__ == '__main__':
-    init_db()
     app.run(host='0.0.0.0', port=5000, debug=True)

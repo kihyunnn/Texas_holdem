@@ -7,7 +7,7 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - ./poker.db:/app/poker.db
+      - ./data:/app/data
     env_file:
       - .env
     restart: unless-stopped

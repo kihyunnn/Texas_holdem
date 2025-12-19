@@ -58,10 +58,10 @@
 - [x] 라이벌 비교 UI
 - [x] 전체 스타일 통일
 
-### ⏳ Phase 6: Docker & 배포 (대기 중)
-- [ ] Dockerfile 작성
-- [ ] docker-compose.yml 작성
-- [ ] 배포 가이드 문서화
+### ✅ Phase 6: Docker & 배포 (100%)
+- [x] Dockerfile 작성
+- [x] docker-compose.yml 작성
+- [x] 배포 가이드 문서화
 
 ---
 
@@ -111,7 +111,8 @@
 ```
 Texas_holdem/
 ├── app.py                    # Flask 백엔드 (550+ lines)
-├── poker.db                  # SQLite DB (자동 생성)
+├── data/                     # SQLite DB 디렉토리
+│   └── poker.db              # SQLite DB (자동 생성)
 ├── requirements.txt          # Python 패키지
 ├── .env                      # 환경 변수 (gitignore)
 ├── .env.example              # 환경 변수 템플릿
@@ -163,7 +164,7 @@ main (배포)
   - M4: AI 통합 ✅
   - M5: 고급 기능 ✅
   - M6: 문서화 ✅ (진행 중)
-  - M7: Docker 배포 (대기 중)
+  - M7: Docker 배포 ✅
 
 ---
 
@@ -211,10 +212,10 @@ main (배포)
 
 ## 9. 다음 단계
 
-### 즉시 가능 (Phase 6)
-- [ ] Dockerfile & docker-compose.yml 작성
-- [ ] 배포 가이드 문서화
-- [ ] 프로덕션 환경 테스트
+### Phase 6 (완료)
+- [x] Dockerfile & docker-compose.yml 작성
+- [x] 배포 가이드 문서화
+- [x] 프로덕션 환경 테스트
 
 ### 향후 개선 사항 (v2.1)
 - [ ] 세션 정산 기능 (누가 누구에게 얼마 보낼지 자동 계산)
