@@ -4,11 +4,20 @@ services:
   web:
     build: .
     container_name: texas_holdem_tracker
-    ports:
-      - "5000:5000"
+    # Server: Uncomment and adjust for external access only if not using NPM
+    # ports:
+    #   - "5000:5000"
     volumes:
+      # Local:
       - ./data:/app/data
+      # Server (Recommended):
+      # - /mnt/data2TB/texas_holdem_data:/app/data
     env_file:
       - .env
     restart: unless-stopped
-    # Gunicorn command is defined in Dockerfile
+    networks:
+      - npm_default
+
+networks:
+  npm_default:
+    external: true
